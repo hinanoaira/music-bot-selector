@@ -2,7 +2,7 @@
   <div id="app">
     <!-- ヘッダー固定 -->
     <header class="header">
-      <h2>Music Request Bot</h2>
+      <h2>あいらの音楽Bot リクエスト</h2>
     </header>
 
     <!-- メイン -->
