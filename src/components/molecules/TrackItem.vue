@@ -1,7 +1,7 @@
 <template>
   <div class="track-item">
-    <span>{{ track.title }}</span>
     <button @click="requestTrack">リクエスト</button>
+    <span>{{ track.title }}</span>
   </div>
 </template>
 

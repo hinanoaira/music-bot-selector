@@ -45,8 +45,8 @@
         <!-- トラック一覧 -->
         <ul>
           <li v-for="track in tracks" :key="track">
-            {{ track }}
             <button @click="requestTrack(track)">リクエスト</button>
+            {{ track }}
           </li>
         </ul>
       </template>

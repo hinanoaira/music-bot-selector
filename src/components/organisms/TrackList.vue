@@ -1,8 +1,8 @@
 <template>
   <ul>
     <li v-for="track in tracks" :key="track.id">
-      {{ track.title }}
       <button @click="request(track.id)">リクエスト</button>
+      {{ track.title }}
     </li>
   </ul>
 </template>
