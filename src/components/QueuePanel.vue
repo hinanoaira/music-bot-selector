@@ -95,6 +95,9 @@ async function fetchQueue() {
             throw new Error(`Failed to fetch queue: ${res.statusText}`)
         }
         const data = await res.json()
+        if (data.length > 1) {
+            data.pop()
+        }
         queueList.value = data
     } catch (err) {
         console.error('Queue fetch error:', err)
