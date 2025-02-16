@@ -98,6 +98,9 @@ async function fetchQueue() {
         if (data.length > 1) {
             data.pop()
         }
+        while (data[0].isCurrent === false) {
+            data.shift()
+        }
         queueList.value = data
     } catch (err) {
         console.error('Queue fetch error:', err)
