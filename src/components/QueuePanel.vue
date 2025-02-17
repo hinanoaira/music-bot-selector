@@ -95,11 +95,11 @@ async function fetchQueue() {
             throw new Error(`Failed to fetch queue: ${res.statusText}`)
         }
         const data = await res.json()
-        if (data.length > 1) {
-            data.pop()
-        }
         while (data[0].isCurrent === false) {
             data.shift()
+        }
+        if (data.length > 1) {
+            data.pop()
         }
         queueList.value = data
     } catch (err) {
