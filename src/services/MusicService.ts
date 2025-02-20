@@ -20,9 +20,6 @@ export async function getArtists(): Promise<Artist[]> {
  */
 export async function getAlbums(artistName: string): Promise<Album[]> {
   const encodedArtist = encodeURIComponent(artistName)
-    .replace(/%23/g, '%2523')
-    .replace(/%3F/g, '%253F')
-    .replace(/%2F/g, '%252F')
   const res = await fetch(`${baseURL}/artist/${encodedArtist}`)
   if (!res.ok) {
     throw new Error(`Failed to fetch albums: ${res.statusText}`)
@@ -36,13 +33,7 @@ export async function getAlbums(artistName: string): Promise<Album[]> {
  */
 export async function getTracks(artistName: string, albumName: string): Promise<Track[]> {
   const encodedArtist = encodeURIComponent(artistName)
-    .replace(/%23/g, '%2523')
-    .replace(/%3F/g, '%253F')
-    .replace(/%2F/g, '%252F')
   const encodedAlbum = encodeURIComponent(albumName)
-    .replace(/%23/g, '%2523')
-    .replace(/%3F/g, '%253F')
-    .replace(/%2F/g, '%252F')
   const res = await fetch(`${baseURL}/artist/${encodedArtist}/${encodedAlbum}`)
   if (!res.ok) {
     throw new Error(`Failed to fetch tracks: ${res.statusText}`)

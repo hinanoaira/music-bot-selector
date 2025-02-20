@@ -1,6 +1,10 @@
 // src/composables/useMusicViewModel.ts
 
 import { ref } from 'vue'
+import { useGuildParam } from '@/composables/useGuildParam'
+
+// guildid
+const { guildId } = useGuildParam()
 
 /**
  * -------------------------
@@ -43,9 +47,6 @@ async function getArtists(): Promise<Artist[]> {
 async function getAlbums(artist: Artist): Promise<Album[]> {
   try {
     const encodedArtist = encodeURIComponent(artist)
-      .replace(/%23/g, '%2523')
-      .replace(/%3F/g, '%253F')
-      .replace(/%2F/g, '%252F')
     const res = await fetch(`${BASE_URL}/artist/${encodedArtist}`)
     if (!res.ok) {
       throw new Error(`Failed to fetch albums: ${res.statusText}`)
@@ -62,13 +63,7 @@ async function getAlbums(artist: Artist): Promise<Album[]> {
 async function getTracks(artist: Artist, album: Album): Promise<Track[]> {
   try {
     const encodedArtist = encodeURIComponent(artist)
-      .replace(/%23/g, '%2523')
-      .replace(/%3F/g, '%253F')
-      .replace(/%2F/g, '%252F')
     const encodedAlbum = encodeURIComponent(album)
-      .replace(/%23/g, '%2523')
-      .replace(/%3F/g, '%253F')
-      .replace(/%2F/g, '%252F')
     const res = await fetch(`${BASE_URL}/artist/${encodedArtist}/${encodedAlbum}`)
     if (!res.ok) {
       throw new Error(`Failed to fetch tracks: ${res.statusText}`)
@@ -160,6 +155,11 @@ export function useMusicViewModel() {
   async function requestTrack(track: Track) {
     console.log('リクエストするトラック:', track)
 
+    if (!guildId.value) {
+      console.warn('No guildId. Request disabled')
+      return
+    }
+
     if (!selectedArtist.value || !selectedAlbum.value) {
       console.warn('No selected artist or album. Cannot request track.')
       return
@@ -167,17 +167,8 @@ export function useMusicViewModel() {
 
     try {
       const encodedArtist = encodeURIComponent(selectedArtist.value)
-        .replace(/%23/g, '%2523')
-        .replace(/%3F/g, '%253F')
-        .replace(/%2F/g, '%252F')
       const encodedAlbum = encodeURIComponent(selectedAlbum.value)
-        .replace(/%23/g, '%2523')
-        .replace(/%3F/g, '%253F')
-        .replace(/%2F/g, '%252F')
       const encodedTrack = encodeURIComponent(track)
-        .replace(/%23/g, '%2523')
-        .replace(/%3F/g, '%253F')
-        .replace(/%2F/g, '%252F')
 
       const requestUrl = `${BASE_URL}/requestplay/${encodedArtist}/${encodedAlbum}/${encodedTrack}`
 
@@ -187,6 +178,9 @@ export function useMusicViewModel() {
       // 実際のAPI仕様がPOSTなら method: 'POST' 等に書き換える
       const response = await fetch(requestUrl, {
         method: 'GET',
+        headers: {
+          guildid: guildId.value,
+        },
       })
 
       if (!response.ok) {
@@ -206,13 +200,7 @@ export function useMusicViewModel() {
    */
   function getAlbumCoverUrl(artist: Artist, album: Album): string {
     const encodedArtist = encodeURIComponent(artist)
-      .replace(/%23/g, '%2523')
-      .replace(/%3F/g, '%253F')
-      .replace(/%2F/g, '%252F')
     const encodedAlbum = encodeURIComponent(album)
-      .replace(/%23/g, '%2523')
-      .replace(/%3F/g, '%253F')
-      .replace(/%2F/g, '%252F')
     return `${BASE_URL}/cover/${encodedArtist}/${encodedAlbum}`
   }
 

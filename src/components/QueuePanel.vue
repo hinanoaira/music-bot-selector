@@ -38,6 +38,9 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useGuildParam } from '@/composables/useGuildParam'
+
+const { guildId } = useGuildParam()
 
 /**
  * QueueItem の型定義
@@ -90,17 +93,21 @@ onUnmounted(() => {
  */
 async function fetchQueue() {
     try {
-        const res = await fetch(`${BASE_URL}/queue`)
+        if (!guildId.value) {
+            console.warn('No guildId. Request disabled')
+            return
+        }
+
+        const res = await fetch(`${BASE_URL}/queue`, {
+            method: 'GET',
+            headers: {
+                guildid: guildId.value,
+            },
+        })
         if (!res.ok) {
             throw new Error(`Failed to fetch queue: ${res.statusText}`)
         }
         const data = await res.json()
-        while (data[0].isCurrent === false) {
-            data.shift()
-        }
-        if (data.length > 1) {
-            data.pop()
-        }
         queueList.value = data
     } catch (err) {
         console.error('Queue fetch error:', err)
@@ -118,14 +125,8 @@ function toggleOpen() {
  * ジャケットURLを組み立て
  */
 function getCoverUrl(albumArtist: string, album: string): string {
-    const encodedAlbumArtist = encodeURIComponent(albumArtist)
-        .replace(/%23/g, "%2523")
-        .replace(/%3F/g, "%253F")
-        .replace(/%2F/g, "%252F");
-    const encodedAlbum = encodeURIComponent(album)
-        .replace(/%23/g, "%2523")
-        .replace(/%3F/g, "%253F")
-        .replace(/%2F/g, "%252F");
+    const encodedAlbumArtist = encodeURIComponent(albumArtist);
+    const encodedAlbum = encodeURIComponent(album);
     return `${BASE_URL}/cover/${encodedAlbumArtist}/${encodedAlbum}`
 }
 
@@ -133,11 +134,16 @@ function getCoverUrl(albumArtist: string, album: string): string {
  * スキップボタン押下時の処理
  */
 async function skipTrack() {
+    if (!guildId.value) {
+        console.warn('No guildId. Skip disabled')
+        return
+    }
     try {
         const res = await fetch(`${BASE_URL}/skip`, {
-            method: 'GET'
-            // 必要に応じて method: 'POST' にしたり、
-            // headersやbodyを追加するなど、API仕様に合わせて修正
+            method: 'GET',
+            headers: {
+                guildid: guildId.value,
+            },
         })
         if (!res.ok) {
             throw new Error(`Skip request failed: ${res.statusText}`)

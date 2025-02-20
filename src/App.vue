@@ -16,12 +16,16 @@
     </footer>
 
     <!-- 右下に常駐するキューリストパネル -->
-    <QueuePanel class="Queue" />
+    <QueuePanel v-if="guildId" class="Queue" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import QueuePanel from '@/components/QueuePanel.vue'
+import { useGuildParam } from '@/composables/useGuildParam'
+
+// guildid
+const { guildId } = useGuildParam()
 </script>
 
 <style scoped>

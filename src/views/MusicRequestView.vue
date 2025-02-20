@@ -45,7 +45,7 @@
         <!-- トラック一覧 -->
         <ul>
           <li v-for="track in tracks" :key="track">
-            <button @click="requestTrack(track)">リクエスト</button>
+            <button @click="requestTrack(track)" :disabled="!guildId">リクエスト</button>
             {{ track }}
           </li>
         </ul>
@@ -57,6 +57,9 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue'
 import { useMusicViewModel } from '@/composables/useMusicViewModel'
+import { useGuildParam } from '@/composables/useGuildParam'
+
+const { guildId } = useGuildParam()
 
 const {
   artists,
