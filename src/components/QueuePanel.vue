@@ -10,6 +10,12 @@
             <!-- isOpen のときだけ中身を表示 -->
             <div v-if="isOpen" class="queue-body">
                 <ul>
+                    <li>
+                        <button class="skip-button" @click.stop="skipTrack" :disabled="queueList.length === 0">
+                            スキップ
+                        </button>
+                        現在のリクエスト数: {{ queueList.length - 1 }}
+                    </li>
                     <!-- queueList の各要素を表示 -->
                     <li v-for="(item, index) in queueList" :key="index" :class="{ current: item.isCurrent }">
                         <!-- ジャケットサムネイル -->
@@ -24,11 +30,6 @@
                                 {{ item.artist }} / {{ item.album }}
                             </div>
                         </div>
-
-                        <!-- スキップボタン：現在再生中の曲だけ表示 -->
-                        <button v-if="item.isCurrent" class="skip-button" @click.stop="skipTrack">
-                            スキップ
-                        </button>
                     </li>
                 </ul>
             </div>
