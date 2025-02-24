@@ -14,7 +14,7 @@
                         <button class="skip-button" @click.stop="skipTrack" :disabled="queueList.length === 0">
                             スキップ
                         </button>
-                        現在のリクエスト数: {{ queueList.length - 1 }}
+                        現在のリクエスト数: {{queueList.filter(e => !e.isCurrent).length}}
                     </li>
                     <!-- queueList の各要素を表示 -->
                     <li v-for="(item, index) in queueList" :key="index" :class="{ current: item.isCurrent }">
