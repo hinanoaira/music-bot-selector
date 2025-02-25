@@ -104,6 +104,9 @@ const onPopState = (event: PopStateEvent) => {
       case 'artistSelected':
         selectedAlbum.value = null
         tracks.value = []
+        if (selectedArtist.value !== state.artist) {
+          selectArtist(state.artist, false)
+        }
         break
       default:
         selectedArtist.value = null

@@ -39,8 +39,10 @@ export function useMusicViewModel() {
   }
 
   /** アーティスト選択時の処理 */
-  async function selectArtist(artist: Artist) {
-    updateCurrentStateScroll()
+  async function selectArtist(artist: Artist, pushHistory: boolean = true) {
+    if (pushHistory) {
+      updateCurrentStateScroll()
+    }
     history.pushState({ stage: 'artistSelected', artist }, '', '')
     selectedArtist.value = artist
     selectedAlbum.value = null
