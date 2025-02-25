@@ -89,10 +89,10 @@ const {
   getAlbumCoverUrl,
 } = useMusicViewModel()
 
-const isMobile = ref(window.innerWidth <= 600)
+const isMobile = ref(window.innerWidth <= 700)
 
 const updateIsMobile = () => {
-  isMobile.value = window.innerWidth <= 600
+  isMobile.value = window.innerWidth <= 700
 }
 
 const onPopState = (event: PopStateEvent) => {
@@ -144,7 +144,7 @@ onUnmounted(() => {
 
 /* 左ペイン */
 .left-pane {
-  width: 300px;
+  width: 320px;
   padding: 16px;
   box-sizing: border-box;
   background-color: #f8f8f8;
@@ -225,7 +225,7 @@ button {
 }
 
 /* レスポンシブ対応：スマホ画面では左ペインを非表示に */
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .left-pane {
     display: none;
   }
