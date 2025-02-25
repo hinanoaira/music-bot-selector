@@ -14,11 +14,26 @@
     <div class="right-pane">
       <!-- 1) アーティスト未選択時 -->
       <template v-if="!selectedArtist">
-        <p>アーティストを選んでください</p>
+        <template v-if="isMobile">
+          <h2>アーティスト一覧</h2>
+          <ul>
+            <li v-for="artist in artists" :key="artist" @click="selectArtist(artist)">
+              {{ artist }}
+            </li>
+          </ul>
+        </template>
+        <template v-else>
+          <p>アーティストを選んでください</p>
+        </template>
       </template>
 
       <!-- 2) アーティスト選択済み & アルバム未選択 → アルバム一覧 -->
       <template v-else-if="selectedArtist && !selectedAlbum">
+        <!-- アーティスト一覧に戻るボタン -->
+        <button class="back-button" @click="$router.go(-1)">
+          アーティスト一覧に戻る
+        </button>
+
         <h2>{{ selectedArtist }} のアルバム一覧</h2>
         <ul>
           <li v-for="album in albums" :key="album" @click="selectAlbum(album)" class="album-item">
@@ -32,7 +47,7 @@
       <!-- 3) アルバム選択済み → トラック一覧 -->
       <template v-else-if="selectedAlbum">
         <!-- アルバム一覧に戻るボタン -->
-        <button class="back-button" @click="backToAlbumList">
+        <button class="back-button" @click="$router.go(-1)">
           アルバム一覧に戻る
         </button>
 
@@ -55,7 +70,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useMusicViewModel } from '@/composables/useMusicViewModel'
 import { useGuildParam } from '@/composables/useGuildParam'
 
@@ -71,12 +86,47 @@ const {
   selectArtist,
   selectAlbum,
   requestTrack,
-  backToAlbumList,
   getAlbumCoverUrl,
 } = useMusicViewModel()
 
+const isMobile = ref(window.innerWidth <= 600)
+
+const updateIsMobile = () => {
+  isMobile.value = window.innerWidth <= 600
+}
+
+const onPopState = (event: PopStateEvent) => {
+  const state = event.state
+  if (state) {
+    switch (state.stage) {
+      case 'albumSelected':
+        break
+      case 'artistSelected':
+        selectedAlbum.value = null
+        tracks.value = []
+        break
+      default:
+        selectedArtist.value = null
+        albums.value = []
+        break
+    }
+  } else {
+    selectedAlbum.value = null
+    tracks.value = []
+    selectedArtist.value = null
+    albums.value = []
+  }
+}
+
+
 onMounted(() => {
   init()
+  window.addEventListener('resize', updateIsMobile)
+  window.addEventListener('popstate', onPopState)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateIsMobile)
 })
 </script>
 
@@ -168,5 +218,12 @@ li:hover {
 
 button {
   margin-left: 8px;
+}
+
+/* レスポンシブ対応：スマホ画面では左ペインを非表示に */
+@media (max-width: 600px) {
+  .left-pane {
+    display: none;
+  }
 }
 </style>

@@ -1,230 +1,103 @@
 // src/composables/useMusicViewModel.ts
-
 import { ref } from 'vue'
 import { useGuildParam } from '@/composables/useGuildParam'
+import {
+  fetchArtists,
+  fetchAlbums,
+  fetchTracks,
+  sendTrackRequest,
+  buildAlbumCoverUrl,
+} from '@/models/musicModel'
+import type { Artist, Album, Track } from '@/models/musicTypes'
 
-// guildid
-const { guildId } = useGuildParam()
-
-/**
- * -------------------------
- * 型定義
- * -------------------------
- */
-export type Artist = string
-export type Album = string
-export type Track = string
-
-/**
- * -------------------------
- * 定数や共通ロジック
- * -------------------------
- */
-const BASE_URL = 'https://msbot-api.home.hinasense.jp'
-
-/**
- * -------------------------
- * API通信 (省略しない版)
- * -------------------------
- */
-
-/** アーティスト一覧を取得する */
-async function getArtists(): Promise<Artist[]> {
-  try {
-    const res = await fetch(`${BASE_URL}/artist`)
-    if (!res.ok) {
-      throw new Error(`Failed to fetch artists: ${res.statusText}`)
-    }
-    const data = await res.json()
-    return Array.isArray(data) ? data : []
-  } catch (error) {
-    console.error('getArtists error:', error)
-    return []
-  }
-}
-
-/** アルバム一覧を取得する */
-async function getAlbums(artist: Artist): Promise<Album[]> {
-  try {
-    const encodedArtist = encodeURIComponent(artist)
-    const res = await fetch(`${BASE_URL}/artist/${encodedArtist}`)
-    if (!res.ok) {
-      throw new Error(`Failed to fetch albums: ${res.statusText}`)
-    }
-    const data = await res.json()
-    return Array.isArray(data) ? data : []
-  } catch (error) {
-    console.error('getAlbums error:', error)
-    return []
-  }
-}
-
-/** トラック一覧を取得する */
-async function getTracks(artist: Artist, album: Album): Promise<Track[]> {
-  try {
-    const encodedArtist = encodeURIComponent(artist)
-    const encodedAlbum = encodeURIComponent(album)
-    const res = await fetch(`${BASE_URL}/artist/${encodedArtist}/${encodedAlbum}`)
-    if (!res.ok) {
-      throw new Error(`Failed to fetch tracks: ${res.statusText}`)
-    }
-    const data = await res.json()
-    return Array.isArray(data) ? data : []
-  } catch (error) {
-    console.error('getTracks error:', error)
-    return []
-  }
-}
-
-/**
- * -------------------------
- * メインの ViewModel
- * -------------------------
- */
 export function useMusicViewModel() {
-  // state
+  // 状態の定義
   const artists = ref<Artist[]>([])
   const albums = ref<Album[]>([])
   const tracks = ref<Track[]>([])
-
-  // 選択中のアーティスト、アルバム
   const selectedArtist = ref<Artist | null>(null)
   const selectedAlbum = ref<Album | null>(null)
 
-  /**
-   * ページ初期化 (onMounted時)
-   * アーティスト一覧を取得する
-   */
+  const { guildId } = useGuildParam()
+
+  /** ページ初期化 */
   async function init() {
     try {
-      const artistList = await getArtists()
-      artists.value = artistList
+      artists.value = await fetchArtists()
     } catch (err) {
       console.error('init error:', err)
     }
   }
 
-  /**
-   * アーティストを選択 -> アルバム一覧を取得
-   */
+  /** アーティスト選択時の処理 */
   async function selectArtist(artist: Artist) {
+    history.pushState({ stage: 'artistSelected', artist }, '', '')
     selectedArtist.value = artist
     selectedAlbum.value = null
+    albums.value = []
     tracks.value = []
 
     try {
-      const albumList = await getAlbums(artist)
-      albums.value = albumList
+      albums.value = await fetchAlbums(artist)
     } catch (err) {
       console.error('selectArtist error:', err)
     }
   }
 
-  /**
-   * アルバムを選択 -> トラック一覧を取得
-   */
+  /** アルバム選択時の処理 */
   async function selectAlbum(album: Album) {
+    history.pushState({ stage: 'albumSelected', album }, '', '')
     selectedAlbum.value = album
     tracks.value = []
-
     if (!selectedArtist.value) {
       console.warn('No artist selected, cannot fetch tracks.')
       return
     }
-
     try {
-      const trackList = await getTracks(selectedArtist.value, album)
-      tracks.value = trackList
+      tracks.value = await fetchTracks(selectedArtist.value, album)
     } catch (err) {
       console.error('selectAlbum error:', err)
     }
   }
 
-  /**
-   * アルバム一覧に戻る (トラック画面から)
-   */
-  function backToAlbumList() {
-    selectedAlbum.value = null
-    tracks.value = []
-  }
-
-  /**
-   * トラックをリクエスト
-   * /requestplay/<AlbumArtist>/<Album>/<TrackTitle>
-   */
+  /** トラックリクエストの実行 */
   async function requestTrack(track: Track) {
     console.log('リクエストするトラック:', track)
-
-    if (!guildId.value) {
-      console.warn('No guildId. Request disabled')
+    if (!guildId.value || !selectedArtist.value || !selectedAlbum.value) {
+      console.warn('必要な情報が不足しておるため、リクエストは実行できぬ。')
       return
     }
-
-    if (!selectedArtist.value || !selectedAlbum.value) {
-      console.warn('No selected artist or album. Cannot request track.')
-      return
-    }
-
     try {
-      const encodedArtist = encodeURIComponent(selectedArtist.value)
-      const encodedAlbum = encodeURIComponent(selectedAlbum.value)
-      const encodedTrack = encodeURIComponent(track)
-
-      const requestUrl = `${BASE_URL}/requestplay/${encodedArtist}/${encodedAlbum}/${encodedTrack}`
-
-      console.log('リクエストURL:', requestUrl)
-
-      // ここでは GET リクエストの例
-      // 実際のAPI仕様がPOSTなら method: 'POST' 等に書き換える
-      const response = await fetch(requestUrl, {
-        method: 'GET',
-        headers: {
-          guildid: guildId.value,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to request track: ${response.statusText}`)
-      }
-
-      // レスポンスをどう扱うかはAPI設計次第
-      const data = await response.json()
-      console.log('リクエスト成功:', data)
+      const result = await sendTrackRequest(
+        selectedArtist.value,
+        selectedAlbum.value,
+        track,
+        guildId.value,
+      )
+      console.log('リクエスト成功:', result)
     } catch (error) {
       console.error('リクエスト時にエラー:', error)
     }
   }
 
-  /**
-   * アルバムカバーURLを組み立てる (ジャケット表示用)
-   */
+  /** アルバムカバーURLを取得 */
   function getAlbumCoverUrl(artist: Artist, album: Album): string {
-    const encodedArtist = encodeURIComponent(artist)
-    const encodedAlbum = encodeURIComponent(album)
-    return `${BASE_URL}/cover/${encodedArtist}/${encodedAlbum}`
+    return buildAlbumCoverUrl(artist, album)
   }
 
-  // ViewModelとして返す値・メソッド
   return {
-    // state
+    // 状態
     artists,
     albums,
     tracks,
     selectedArtist,
     selectedAlbum,
-
-    // init
+    // 初期化・選択系メソッド
     init,
-
-    // 選択系
     selectArtist,
     selectAlbum,
-
-    // 戻る/リクエスト
-    backToAlbumList,
     requestTrack,
-
-    // ジャケットURL
+    // 補助関数
     getAlbumCoverUrl,
   }
 }

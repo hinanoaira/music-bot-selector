@@ -1,5 +1,5 @@
 // src/services/MusicService.ts
-import type { Artist, Album, Track } from '@/models/music'
+import type { Artist, Album, Track } from '@/models/musicTypes'
 
 const baseURL = 'https://msbot-api.home.hinasense.jp'
 
