@@ -110,6 +110,10 @@ const onPopState = (event: PopStateEvent) => {
         albums.value = []
         break
     }
+    setTimeout(() => {
+      const rightPane = document.querySelector('.right-pane')
+      if (rightPane) rightPane.scrollTop = state.rightScroll ?? 0
+    }, 0)
   } else {
     selectedAlbum.value = null
     tracks.value = []

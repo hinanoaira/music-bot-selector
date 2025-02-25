@@ -29,8 +29,18 @@ export function useMusicViewModel() {
     }
   }
 
+  function updateCurrentStateScroll() {
+    // 左ペインと右ペインの要素を取得
+    const rightPane = document.querySelector('.right-pane')
+    const rightScroll = rightPane ? rightPane.scrollTop : 0
+
+    // 現在の履歴 state にスクロール位置を追加して更新
+    history.replaceState({ ...history.state, rightScroll }, '')
+  }
+
   /** アーティスト選択時の処理 */
   async function selectArtist(artist: Artist) {
+    updateCurrentStateScroll()
     history.pushState({ stage: 'artistSelected', artist }, '', '')
     selectedArtist.value = artist
     selectedAlbum.value = null
@@ -46,6 +56,7 @@ export function useMusicViewModel() {
 
   /** アルバム選択時の処理 */
   async function selectAlbum(album: Album) {
+    updateCurrentStateScroll()
     history.pushState({ stage: 'albumSelected', album }, '', '')
     selectedAlbum.value = album
     tracks.value = []
