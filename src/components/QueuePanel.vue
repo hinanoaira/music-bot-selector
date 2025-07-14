@@ -75,13 +75,9 @@ const queueList = ref<QueueItem[]>([])
  */
 let ws: WebSocket | null = null
 
-onMounted(() => {
-  if (!guildId.value) {
-    console.warn('No guildId. WebSocket connection disabled')
-    return
-  }
+function websocketOpen(guildId: string) {
   // guildIdをクエリパラメータで送信
-  const wsUrl = `wss://msbot-api.home.hinasense.jp?guildid=${encodeURIComponent(guildId.value)}`
+  const wsUrl = `wss://msbot-api.home.hinasense.jp?guildid=${encodeURIComponent(guildId)}`
   ws = new WebSocket(wsUrl)
   ws.onopen = () => {
     // 何も送信しない（サーバーがprotocolでguildIdを受け取る想定）
@@ -99,8 +95,16 @@ onMounted(() => {
     console.error('WebSocket error:', err)
   }
   ws.onclose = () => {
-    console.warn('WebSocket closed')
+    websocketOpen(guildId)
   }
+}
+
+onMounted(() => {
+  if (!guildId.value) {
+    console.warn('No guildId. WebSocket connection disabled')
+    return
+  }
+  websocketOpen(guildId.value)
 })
 
 onUnmounted(() => {
