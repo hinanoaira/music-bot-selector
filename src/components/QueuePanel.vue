@@ -71,49 +71,46 @@ const isOpen = ref(false)
 const queueList = ref<QueueItem[]>([])
 
 /**
- * 1秒ごとのタイマーID
+ * WebSocketインスタンス
  */
-let timerId: number | undefined
+let ws: WebSocket | null = null
 
-/**
- * onMounted: 初回読み込み + 以後1秒ごとに更新
- */
 onMounted(() => {
-  fetchQueue()
-  timerId = window.setInterval(fetchQueue, 1000) // 1秒ごと
+  if (!guildId.value) {
+    console.warn('No guildId. WebSocket connection disabled')
+    return
+  }
+  // guildIdをクエリパラメータで送信
+  const wsUrl = `wss://msbot-api.home.hinasense.jp?guildid=${encodeURIComponent(guildId.value)}`
+  ws = new WebSocket(wsUrl)
+  ws.onopen = () => {
+    // 何も送信しない（サーバーがprotocolでguildIdを受け取る想定）
+  }
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data)
+      // 受信データが配列ならqueueListに反映
+      queueList.value = data.data;
+    } catch (err) {
+      console.error('WebSocket message parse error:', err)
+    }
+  }
+  ws.onerror = (err) => {
+    console.error('WebSocket error:', err)
+  }
+  ws.onclose = () => {
+    console.warn('WebSocket closed')
+  }
 })
 
 onUnmounted(() => {
-  if (timerId) {
-    clearInterval(timerId)
+  if (ws) {
+    ws.close()
+    ws = null
   }
 })
 
-/**
- * キューを取得するメソッド
- */
-async function fetchQueue() {
-  try {
-    if (!guildId.value) {
-      console.warn('No guildId. Request disabled')
-      return
-    }
-
-    const res = await fetch(`${BASE_URL}/queue`, {
-      method: 'GET',
-      headers: {
-        guildid: guildId.value,
-      },
-    })
-    if (!res.ok) {
-      throw new Error(`Failed to fetch queue: ${res.statusText}`)
-    }
-    const data = await res.json()
-    queueList.value = data
-  } catch (err) {
-    console.error('Queue fetch error:', err)
-  }
-}
+// fetchQueueはWebSocket化により不要になったため削除
 
 /**
  * パネルの開閉を切り替え
@@ -150,9 +147,7 @@ async function skipTrack() {
       throw new Error(`Skip request failed: ${res.statusText}`)
     }
     console.log('スキップ成功')
-
-    // スキップしたらキューを再取得して反映
-    fetchQueue()
+    // WebSocket経由で自動反映されるためfetchQueue不要
   } catch (error) {
     console.error('スキップ失敗:', error)
   }
