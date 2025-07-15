@@ -80,7 +80,13 @@ function websocketOpen(guildId: string) {
   const wsUrl = `wss://msbot-api.home.hinasense.jp?guildid=${encodeURIComponent(guildId)}`
   ws = new WebSocket(wsUrl)
   ws.onopen = () => {
-    // 何も送信しない（サーバーがprotocolでguildIdを受け取る想定）
+    const interval = setInterval(() => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'ping' }))
+      } else {
+        clearInterval(interval)
+      }
+    }, 30000) // 30秒ごとにpingを送信
   }
   ws.onmessage = (event) => {
     try {
