@@ -101,7 +101,8 @@ function websocketOpen(guildId: string) {
     console.error('WebSocket error:', err)
   }
   ws.onclose = () => {
-    websocketOpen(guildId)
+    setTimeout(() =>
+      websocketOpen(guildId), 5000)
   }
 }
 
