@@ -91,8 +91,9 @@ function websocketOpen(guildId: string) {
   ws.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data)
-      // 受信データが配列ならqueueListに反映
-      queueList.value = data.data;
+      if (data.type === "queue") {
+        queueList.value = data.data;
+      }
     } catch (err) {
       console.error('WebSocket message parse error:', err)
     }
