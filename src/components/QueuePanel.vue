@@ -40,8 +40,10 @@
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useGuildParam } from '@/composables/useGuildParam'
+import { useToastStore } from '@/stores/toast'
 
 const { guildId } = useGuildParam()
+const { showSuccess, showError } = useToastStore()
 
 /**
  * QueueItem の型定義
@@ -145,7 +147,7 @@ function getCoverUrl(albumArtist: string, album: string): string {
  */
 async function skipTrack() {
   if (!guildId.value) {
-    console.warn('No guildId. Skip disabled')
+    showError('ギルドIDが設定されていないため、スキップできません')
     return
   }
   try {
@@ -159,9 +161,12 @@ async function skipTrack() {
       throw new Error(`Skip request failed: ${res.statusText}`)
     }
     console.log('スキップ成功')
+    showSuccess('トラックをスキップしました')
     // WebSocket経由で自動反映されるためfetchQueue不要
   } catch (error) {
     console.error('スキップ失敗:', error)
+    const errorMessage = error instanceof Error ? error.message : 'スキップに失敗しました'
+    showError(`スキップ失敗: ${errorMessage}`)
   }
 }
 </script>

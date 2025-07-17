@@ -81,6 +81,27 @@ export async function sendTrackRequest(
   }
 }
 
+export async function sendYoutubeTrackRequest(url: string, guildId: string): Promise<unknown> {
+  try {
+    const requestUrl = `${BASE_URL}/youtubeplay/${encodeURIComponent(url)}`
+
+    const response = await fetch(requestUrl, {
+      method: 'GET',
+      headers: {
+        guildid: guildId,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to request YouTube track: ${response.statusText}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('sendYoutubeTrackRequest error:', error)
+    throw error
+  }
+}
+
 /** アルバムカバーURLを組み立てる */
 export function buildAlbumCoverUrl(artist: Artist, album: Album): string {
   const encodedArtist = encodeURIComponent(artist)

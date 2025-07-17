@@ -1,12 +1,14 @@
 // src/composables/useMusicViewModel.ts
 import { ref } from 'vue'
 import { useGuildParam } from '@/composables/useGuildParam'
+import { useToastStore } from '@/stores/toast'
 import {
   fetchArtists,
   fetchAlbums,
   fetchTracks,
   sendTrackRequest,
   buildAlbumCoverUrl,
+  sendYoutubeTrackRequest,
 } from '@/models/musicModel'
 import type { Artist, Album, Track } from '@/models/musicTypes'
 
@@ -19,6 +21,7 @@ export function useMusicViewModel() {
   const selectedAlbum = ref<Album | null>(null)
 
   const { guildId } = useGuildParam()
+  const { showSuccess, showError, showWarning } = useToastStore()
 
   /** ページ初期化 */
   async function init() {
@@ -77,7 +80,7 @@ export function useMusicViewModel() {
   async function requestTrack(track: Track) {
     console.log('リクエストするトラック:', track)
     if (!guildId.value || !selectedArtist.value || !selectedAlbum.value) {
-      console.warn('必要な情報が不足しておるため、リクエストは実行できぬ。')
+      showWarning('必要な情報が不足しているため、リクエストを実行できません。')
       return
     }
     try {
@@ -88,8 +91,30 @@ export function useMusicViewModel() {
         guildId.value,
       )
       console.log('リクエスト成功:', result)
+      showSuccess(`「${track}」をリクエストしました！`)
     } catch (error) {
       console.error('リクエスト時にエラー:', error)
+      const errorMessage = error instanceof Error ? error.message : 'リクエストに失敗しました'
+      showError(`リクエスト失敗: ${errorMessage}`)
+    }
+  }
+
+  /** Youtubeリクエストの実行 */
+  async function requestYoutubeTrack(url: string) {
+    console.log('リクエストするYouTubeトラック:', url)
+    if (!guildId.value) {
+      showWarning('ギルドIDが設定されていません。')
+      return
+    }
+    try {
+      const result = await sendYoutubeTrackRequest(url, guildId.value)
+      console.log('YouTubeリクエスト成功:', result)
+      showSuccess('YouTubeトラックをリクエストしました！')
+    } catch (error) {
+      console.error('YouTubeリクエスト時にエラー:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'YouTubeリクエストに失敗しました'
+      showError(`リクエスト失敗: ${errorMessage}`)
     }
   }
 
@@ -110,6 +135,7 @@ export function useMusicViewModel() {
     selectArtist,
     selectAlbum,
     requestTrack,
+    requestYoutubeTrack,
     // 補助関数
     getAlbumCoverUrl,
   }

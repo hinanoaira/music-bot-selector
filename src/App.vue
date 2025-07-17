@@ -17,11 +17,15 @@
 
     <!-- 右下に常駐するキューリストパネル -->
     <QueuePanel v-if="guildId" class="Queue" />
+
+    <!-- トースト通知 -->
+    <ToastContainer />
   </div>
 </template>
 
 <script lang="ts" setup>
 import QueuePanel from '@/components/QueuePanel.vue'
+import ToastContainer from '@/components/ToastContainer.vue'
 import { useGuildParam } from '@/composables/useGuildParam'
 
 // guildid

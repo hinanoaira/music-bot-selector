@@ -63,6 +63,12 @@
             <button @click="requestTrack(track)" :disabled="!guildId">リクエスト</button>
             {{ track }}
           </li>
+          <li v-if="selectedArtist === 'Youtube' && selectedAlbum === 'Youtube'">
+            <button @click="youtubeUrl && requestYoutubeTrack(youtubeUrl); youtubeUrl = ''"
+              :disabled="!guildId || !youtubeUrl">リクエスト</button>
+            <input type="text" v-model="youtubeUrl" placeholder="URLを入力..."
+              @keydown.enter.prevent="youtubeUrl && (requestYoutubeTrack(youtubeUrl), youtubeUrl = '')" />
+          </li>
         </ul>
       </template>
     </div>
@@ -86,6 +92,7 @@ const {
   selectArtist,
   selectAlbum,
   requestTrack,
+  requestYoutubeTrack,
   getAlbumCoverUrl,
 } = useMusicViewModel()
 
@@ -94,6 +101,8 @@ const isMobile = ref(window.innerWidth <= 700)
 const updateIsMobile = () => {
   isMobile.value = window.innerWidth <= 700
 }
+
+const youtubeUrl = ref('')
 
 const onPopState = (event: PopStateEvent) => {
   const state = event.state
