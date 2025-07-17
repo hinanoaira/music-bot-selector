@@ -19,6 +19,7 @@ export function useMusicViewModel() {
   const tracks = ref<Track[]>([])
   const selectedArtist = ref<Artist | null>(null)
   const selectedAlbum = ref<Album | null>(null)
+  const isRequestingYoutube = ref(false)
 
   const { guildId } = useGuildParam()
   const { showSuccess, showError, showWarning } = useToastStore()
@@ -106,6 +107,8 @@ export function useMusicViewModel() {
       showWarning('ギルドIDが設定されていません。')
       return
     }
+
+    isRequestingYoutube.value = true
     try {
       const result = await sendYoutubeTrackRequest(url, guildId.value)
       console.log('YouTubeリクエスト成功:', result)
@@ -115,6 +118,8 @@ export function useMusicViewModel() {
       const errorMessage =
         error instanceof Error ? error.message : 'YouTubeリクエストに失敗しました'
       showError(`リクエスト失敗: ${errorMessage}`)
+    } finally {
+      isRequestingYoutube.value = false
     }
   }
 
@@ -130,6 +135,7 @@ export function useMusicViewModel() {
     tracks,
     selectedArtist,
     selectedAlbum,
+    isRequestingYoutube,
     // 初期化・選択系メソッド
     init,
     selectArtist,
