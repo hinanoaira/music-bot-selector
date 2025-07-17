@@ -64,7 +64,8 @@
               :disabled="!guildId || !youtubeUrl || isRequestingYoutube">リクエスト</button>
             <input type="text" v-model="youtubeUrl" :placeholder="isRequestingYoutube ? 'リクエスト処理中...' : 'URLを入力...'"
               :disabled="isRequestingYoutube"
-              @keydown.enter.prevent="youtubeUrl && !isRequestingYoutube && (requestYoutubeTrack(youtubeUrl), youtubeUrl = '')" />
+              @keydown.enter.prevent="youtubeUrl && !isRequestingYoutube && (requestYoutubeTrack(youtubeUrl), youtubeUrl = '')"
+              style="width: 70%; max-width: 100%; box-sizing: border-box;" />
           </li>
           <li v-for="track in tracks" :key="track">
             <button @click="requestTrack(track)" :disabled="!guildId">リクエスト</button>
