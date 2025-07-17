@@ -59,16 +59,16 @@
 
         <!-- トラック一覧 -->
         <ul>
-          <li v-for="track in tracks" :key="track">
-            <button @click="requestTrack(track)" :disabled="!guildId">リクエスト</button>
-            {{ track }}
-          </li>
           <li v-if="selectedArtist === 'Youtube' && selectedAlbum === 'Youtube'">
             <button @click="youtubeUrl && requestYoutubeTrack(youtubeUrl); youtubeUrl = ''"
               :disabled="!guildId || !youtubeUrl || isRequestingYoutube">リクエスト</button>
             <input type="text" v-model="youtubeUrl" :placeholder="isRequestingYoutube ? 'リクエスト処理中...' : 'URLを入力...'"
               :disabled="isRequestingYoutube"
               @keydown.enter.prevent="youtubeUrl && !isRequestingYoutube && (requestYoutubeTrack(youtubeUrl), youtubeUrl = '')" />
+          </li>
+          <li v-for="track in tracks" :key="track">
+            <button @click="requestTrack(track)" :disabled="!guildId">リクエスト</button>
+            {{ track }}
           </li>
         </ul>
       </template>
