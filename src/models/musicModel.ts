@@ -11,6 +11,13 @@ export async function fetchArtists(): Promise<Artist[]> {
       throw new Error(`Failed to fetch artists: ${res.statusText}`)
     }
     const data = await res.json()
+    if (Array.isArray(data)) {
+      const youtubeIndex = data.findIndex((artist: Artist) => artist === 'Youtube')
+      if (youtubeIndex > 0) {
+        const [youtubeArtist] = data.splice(youtubeIndex, 1)
+        data.unshift(youtubeArtist)
+      }
+    }
     return Array.isArray(data) ? data : []
   } catch (error) {
     console.error('fetchArtists error:', error)
