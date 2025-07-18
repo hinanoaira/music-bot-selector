@@ -11,14 +11,14 @@ Vue 3 + TypeScript + MVVM パターンによる音楽ボットセレクター
 ```
 src/
 ├── config/                    # 設定ファイル
-│   └── api.ts                # API設定とエンドポイント
+│   └── api.ts                # API設定とエンドポイント（WebSocket含む）
 ├── models/                   # Model層
 │   ├── repositories/         # データアクセス層
 │   │   └── MusicRepository.ts
 │   ├── services/            # ビジネスロジック層
 │   │   ├── MusicService.ts
-│   │   └── QueueService.ts
-│   └── musicTypes.ts        # 型定義
+│   │   └── QueueService.ts    # WebSocket通信とキュー管理
+│   └── musicTypes.ts        # 型定義（QueueItem、PlaybackStatus等）
 ├── viewmodels/              # ViewModel層
 │   ├── MusicViewModel.ts
 │   ├── MusicRequestViewModel.ts
@@ -31,9 +31,9 @@ src/
 ├── views/                   # View層（ページ）
 │   └── MusicRequestView.vue
 ├── components/              # View層（コンポーネント）
-│   ├── QueuePanel.vue
-│   └── ToastContainer.vue
-├── stores/                  # 状態管理
+│   ├── QueuePanel.vue         # キュー表示・操作パネル
+│   └── ToastContainer.vue     # 通知表示
+├── stores/                  # 状態管理（Pinia）
 │   └── toast.ts
 ├── router/                  # ルーティング
 │   └── index.ts
@@ -47,7 +47,7 @@ src/
 ### **Model層**
 
 - **Repository**: データアクセス（API通信）
-- **Service**: ビジネスロジック（バリデーション、データ変換）
+- **Service**: ビジネスロジック（バリデーション、データ変換、WebSocket通信）
 - **Types**: 型定義
 
 ### **ViewModel層**
@@ -70,20 +70,39 @@ src/
 - アーティスト、アルバム、トラック選択
 - YouTubeトラックリクエスト
 - リアルタイム状態管理
+- アルバムカバー画像表示
 
 ### 🎼 キュー管理機能
 
 - WebSocketによるリアルタイム更新
 - 現在再生中トラック表示
 - スキップ機能
+- 再生時間・プログレスバー表示
+- 待機中トラック数表示
 
 ### 🧭 ナビゲーション機能
 
 - ブラウザ履歴管理
 - スクロール位置保持
 - 戻る/進む対応
+- モバイル対応
+
+### 🔔 通知機能
+
+- トースト通知システム
+- 成功・エラー・警告・情報メッセージ
+- 自動消去機能
 
 ## 🔧 開発環境
+
+### 技術スタック
+
+- **フロントエンド**: Vue 3.5.13
+- **言語**: TypeScript 5.7.3
+- **ビルドツール**: Vite 6.0.11
+- **状態管理**: Pinia 2.3.1
+- **ルーティング**: Vue Router 4.5.0
+- **リアルタイム通信**: WebSocket
 
 ### 推奨IDE
 
@@ -120,34 +139,36 @@ npm run build
 npm run lint
 ```
 
-## 🎨 設計思想
+### フォーマット
 
-### **責務の分離**
+```bash
+npm run format
+```
 
-各層が明確な責務を持ち、依存関係が一方向になるよう設計
+## 🌐 API エンドポイント
 
-### **型安全性**
+### 音楽データ取得
 
-TypeScriptによる厳格な型チェック
+- `GET /artist` - アーティスト一覧取得
+- `GET /artist/{artist}` - アルバム一覧取得
+- `GET /artist/{artist}/{album}` - トラック一覧取得
 
-### **テスタビリティ**
+### 音楽リクエスト
 
-ViewModel層のビジネスロジックが独立してテスト可能
+- `GET /requestplay/{artist}/{album}/{track}` - トラックリクエスト
+- `GET /youtubeplay/{url}` - YouTubeトラックリクエスト
+- `GET /skip` - スキップリクエスト
 
-### **再利用性**
+### その他
 
-Repository、Service、ViewModelが他のプロジェクトでも再利用可能
+- `GET /cover/{artist}/{album}` - アルバムカバー画像取得
+- `WSS /` - WebSocket接続（キュー更新）
 
-### **保守性**
+## 🎨 レスポンシブデザイン
 
-機能ごとにモジュール化され、変更影響範囲が限定的
-
-## 🚀 今後の拡張性
-
-- 新しいViewModel追加による機能拡張
-- Repository層の差し替えによるデータソース変更
-- Service層でのビジネスロジック拡張
-- Component層での UI拡張
+- デスクトップ: 左右ペイン分割レイアウト
+- モバイル（700px以下）: 単一ペインレイアウト
+- アダプティブなUIコンポーネント
 
 ## 📝 ライセンス
 
