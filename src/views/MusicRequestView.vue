@@ -79,7 +79,7 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useMusicViewModel } from '@/composables/useMusicViewModel'
+import { useMusicViewModelMVVM } from '@/composables/useMusicViewModelMVVM'
 import { useGuildParam } from '@/composables/useGuildParam'
 
 const { guildId } = useGuildParam()
@@ -97,7 +97,8 @@ const {
   requestTrack,
   requestYoutubeTrack,
   getAlbumCoverUrl,
-} = useMusicViewModel()
+  handlePopState,
+} = useMusicViewModelMVVM()
 
 const isMobile = ref(window.innerWidth <= 700)
 
@@ -107,41 +108,11 @@ const updateIsMobile = () => {
 
 const youtubeUrl = ref('')
 
-const onPopState = (event: PopStateEvent) => {
-  const state = event.state
-  if (state) {
-    switch (state.stage) {
-      case 'albumSelected':
-        break
-      case 'artistSelected':
-        selectedAlbum.value = null
-        tracks.value = []
-        if (selectedArtist.value !== state.artist) {
-          selectArtist(state.artist, false)
-        }
-        break
-      default:
-        selectedArtist.value = null
-        albums.value = []
-        break
-    }
-    setTimeout(() => {
-      const rightPane = document.querySelector('.right-pane')
-      if (rightPane) rightPane.scrollTop = state.rightScroll ?? 0
-    }, 0)
-  } else {
-    selectedAlbum.value = null
-    tracks.value = []
-    selectedArtist.value = null
-    albums.value = []
-  }
-}
-
 
 onMounted(() => {
   init()
   window.addEventListener('resize', updateIsMobile)
-  window.addEventListener('popstate', onPopState)
+  window.addEventListener('popstate', handlePopState)
 })
 
 onUnmounted(() => {

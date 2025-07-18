@@ -1,7 +1,7 @@
 <template>
   <div class="queue-panel" :class="{ 'is-open': isOpen }">
     <!-- ヘッダー部分（クリックで開閉） -->
-    <div class="queue-header" @click="toggleOpen">
+    <div class="queue-header" @click="togglePanel">
       <span>♪ Current Queue ♪</span>
     </div>
 
@@ -11,13 +11,13 @@
       <div v-if="isOpen" class="queue-body">
         <ul>
           <li>
-            <button class="skip-button" @click.stop="skipTrack" :disabled="queueList.length === 0">
+            <button class="skip-button" @click.stop="handleSkipTrack" :disabled="queueItems.length === 0">
               スキップ
             </button>
-            現在のリクエスト数: {{queueList.filter(e => !e.isCurrent).length}}
+            現在のリクエスト数: {{ pendingTrackCount }}
           </li>
-          <!-- queueList の各要素を表示 -->
-          <li v-for="(item, index) in queueList" :key="index" :class="{ current: item.isCurrent }">
+          <!-- queueItems の各要素を表示 -->
+          <li v-for="(item, index) in queueItems" :key="index" :class="{ current: item.isCurrent }">
             <!-- ジャケットサムネイル -->
             <img class="cover-thumb" :src="getCoverUrl(item.albumArtist, item.album)" alt="Album cover" />
 
@@ -38,136 +38,23 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useGuildParam } from '@/composables/useGuildParam'
-import { useToastStore } from '@/stores/toast'
+import { useQueueViewModel } from '@/composables/useQueueViewModel'
 
-const { guildId } = useGuildParam()
-const { showSuccess, showError } = useToastStore()
+const {
+  queueItems,
+  isOpen,
+  pendingTrackCount,
+  togglePanel,
+  skipTrack,
+  getAlbumCoverUrl,
+} = useQueueViewModel()
 
-/**
- * QueueItem の型定義
- */
-interface QueueItem {
-  index: number
-  artist: string
-  album: string
-  title: string
-  albumArtist: string
-  isCurrent: boolean
-}
-
-/**
- * BASE_URL
- */
-const BASE_URL = 'https://msbot-api.home.hinasense.jp'
-
-/**
- * 開閉状態
- */
-const isOpen = ref(false)
-
-/**
- * キュー一覧
- */
-const queueList = ref<QueueItem[]>([])
-
-/**
- * WebSocketインスタンス
- */
-let ws: WebSocket | null = null
-
-function websocketOpen(guildId: string) {
-  // guildIdをクエリパラメータで送信
-  const wsUrl = `wss://msbot-api.home.hinasense.jp?guildid=${encodeURIComponent(guildId)}`
-  ws = new WebSocket(wsUrl)
-  ws.onopen = () => {
-    const interval = setInterval(() => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'ping' }))
-      } else {
-        clearInterval(interval)
-      }
-    }, 30000) // 30秒ごとにpingを送信
-  }
-  ws.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data)
-      if (data.type === "queue") {
-        queueList.value = data.data;
-      }
-    } catch (err) {
-      console.error('WebSocket message parse error:', err)
-    }
-  }
-  ws.onerror = (err) => {
-    console.error('WebSocket error:', err)
-  }
-  ws.onclose = () => {
-    setTimeout(() =>
-      websocketOpen(guildId), 5000)
-  }
-}
-
-onMounted(() => {
-  if (!guildId.value) {
-    console.warn('No guildId. WebSocket connection disabled')
-    return
-  }
-  websocketOpen(guildId.value)
-})
-
-onUnmounted(() => {
-  if (ws) {
-    ws.close()
-    ws = null
-  }
-})
-
-// fetchQueueはWebSocket化により不要になったため削除
-
-/**
- * パネルの開閉を切り替え
- */
-function toggleOpen() {
-  isOpen.value = !isOpen.value
-}
-
-/**
- * ジャケットURLを組み立て
- */
 function getCoverUrl(albumArtist: string, album: string): string {
-  const encodedAlbumArtist = encodeURIComponent(albumArtist);
-  const encodedAlbum = encodeURIComponent(album);
-  return `${BASE_URL}/cover/${encodedAlbumArtist}/${encodedAlbum}`
+  return getAlbumCoverUrl(albumArtist, album)
 }
 
-/**
- * スキップボタン押下時の処理
- */
-async function skipTrack() {
-  if (!guildId.value) {
-    showError('ギルドIDが設定されていないため、スキップできません')
-    return
-  }
-  try {
-    const res = await fetch(`${BASE_URL}/skip`, {
-      method: 'GET',
-      headers: {
-        guildid: guildId.value,
-      },
-    })
-    if (!res.ok) {
-      throw new Error(`Skip request failed: ${res.statusText}`)
-    }
-    console.log('スキップ成功')
-    showSuccess('トラックをスキップしました')
-    // WebSocket経由で自動反映されるためfetchQueue不要
-  } catch (error) {
-    console.error('スキップ失敗:', error)
-    const errorMessage = error instanceof Error ? error.message : 'スキップに失敗しました'
-    showError(`スキップ失敗: ${errorMessage}`)
-  }
+async function handleSkipTrack() {
+  await skipTrack()
 }
 </script>
 

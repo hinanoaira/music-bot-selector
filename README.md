@@ -1,39 +1,154 @@
-# music-bot-selector
+# Music Bot Selector
 
-This template should help get you started developing with Vue 3 in Vite.
+Vue 3 + TypeScript + MVVM パターンによる音楽ボットセレクター
 
-## Recommended IDE Setup
+## 🏗️ アーキテクチャ
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+このプロジェクトは **MVVM (Model-View-ViewModel) パターン** を採用しており、以下の層で構成されています：
 
-## Type Support for `.vue` Imports in TS
+### 📂 プロジェクト構造
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+```
+src/
+├── config/                    # 設定ファイル
+│   └── api.ts                # API設定とエンドポイント
+├── models/                   # Model層
+│   ├── repositories/         # データアクセス層
+│   │   └── MusicRepository.ts
+│   ├── services/            # ビジネスロジック層
+│   │   ├── MusicService.ts
+│   │   └── QueueService.ts
+│   └── musicTypes.ts        # 型定義
+├── viewmodels/              # ViewModel層
+│   ├── MusicViewModel.ts
+│   ├── MusicRequestViewModel.ts
+│   ├── NavigationViewModel.ts
+│   └── QueueViewModel.ts
+├── composables/             # View層とViewModel層の橋渡し
+│   ├── useMusicViewModelMVVM.ts
+│   ├── useQueueViewModel.ts
+│   └── useGuildParam.ts
+├── views/                   # View層（ページ）
+│   └── MusicRequestView.vue
+├── components/              # View層（コンポーネント）
+│   ├── QueuePanel.vue
+│   └── ToastContainer.vue
+├── stores/                  # 状態管理
+│   └── toast.ts
+├── router/                  # ルーティング
+│   └── index.ts
+├── assets/                  # 静的ファイル
+├── App.vue
+└── main.ts
+```
 
-## Customize configuration
+## 🎯 MVVM パターンの役割分担
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### **Model層**
 
-## Project Setup
+- **Repository**: データアクセス（API通信）
+- **Service**: ビジネスロジック（バリデーション、データ変換）
+- **Types**: 型定義
 
-```sh
+### **ViewModel層**
+
+- **MusicViewModel**: 音楽データの状態管理
+- **MusicRequestViewModel**: リクエスト処理の状態管理
+- **NavigationViewModel**: ナビゲーション状態管理
+- **QueueViewModel**: キュー管理とWebSocket通信
+
+### **View層**
+
+- **Views**: ページコンポーネント
+- **Components**: 再利用可能なUIコンポーネント
+- **Composables**: ViewModelとViewの橋渡し
+
+## 📋 主要機能
+
+### 🎵 音楽リクエスト機能
+
+- アーティスト、アルバム、トラック選択
+- YouTubeトラックリクエスト
+- リアルタイム状態管理
+
+### 🎼 キュー管理機能
+
+- WebSocketによるリアルタイム更新
+- 現在再生中トラック表示
+- スキップ機能
+
+### 🧭 ナビゲーション機能
+
+- ブラウザ履歴管理
+- スクロール位置保持
+- 戻る/進む対応
+
+## 🔧 開発環境
+
+### 推奨IDE
+
+- [VSCode](https://code.visualstudio.com/)
+- [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+
+### プロジェクトセットアップ
+
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### 開発サーバー起動
 
-```sh
+```bash
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### 型チェック
 
-```sh
+```bash
+npm run type-check
+```
+
+### ビルド
+
+```bash
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### リント
 
-```sh
+```bash
 npm run lint
 ```
+
+## 🎨 設計思想
+
+### **責務の分離**
+
+各層が明確な責務を持ち、依存関係が一方向になるよう設計
+
+### **型安全性**
+
+TypeScriptによる厳格な型チェック
+
+### **テスタビリティ**
+
+ViewModel層のビジネスロジックが独立してテスト可能
+
+### **再利用性**
+
+Repository、Service、ViewModelが他のプロジェクトでも再利用可能
+
+### **保守性**
+
+機能ごとにモジュール化され、変更影響範囲が限定的
+
+## 🚀 今後の拡張性
+
+- 新しいViewModel追加による機能拡張
+- Repository層の差し替えによるデータソース変更
+- Service層でのビジネスロジック拡張
+- Component層での UI拡張
+
+## 📝 ライセンス
+
+This project is private.
