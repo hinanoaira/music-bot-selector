@@ -1,6 +1,6 @@
 // src/models/services/QueueService.ts
 import { API_CONFIG } from '@/config/api'
-import type { QueueItem, WebSocketMessage } from '../musicTypes'
+import type { QueueItem, WebSocketMessage, PlaybackStatus } from '../musicTypes'
 
 /**
  * キューサービス - WebSocket通信とキュー管理
@@ -10,6 +10,7 @@ export class QueueService {
   private ws: WebSocket | null = null
   private pingInterval: number | null = null
   private listeners: Set<(queue: QueueItem[]) => void> = new Set()
+  private playbackStatusListeners: Set<(status: PlaybackStatus) => void> = new Set()
 
   static getInstance(): QueueService {
     if (!QueueService.instance) {
@@ -39,6 +40,12 @@ export class QueueService {
         const message: WebSocketMessage = JSON.parse(event.data)
         if (message.type === 'queue' && message.data) {
           this.notifyListeners(message.data)
+        }
+        if (
+          (message.type === 'playbackUpdate' || message.type === 'queue') &&
+          message.playbackStatus
+        ) {
+          this.notifyPlaybackStatusListeners(message.playbackStatus)
         }
       } catch (err) {
         console.error('QueueService: WebSocket message parse error:', err)
@@ -83,6 +90,20 @@ export class QueueService {
   }
 
   /**
+   * 再生状態の変更を監視するリスナーを追加
+   */
+  addPlaybackStatusListener(listener: (status: PlaybackStatus) => void): void {
+    this.playbackStatusListeners.add(listener)
+  }
+
+  /**
+   * 再生状態の変更監視リスナーを削除
+   */
+  removePlaybackStatusListener(listener: (status: PlaybackStatus) => void): void {
+    this.playbackStatusListeners.delete(listener)
+  }
+
+  /**
    * ping送信を開始
    */
   private startPing(): void {
@@ -108,5 +129,12 @@ export class QueueService {
    */
   private notifyListeners(queue: QueueItem[]): void {
     this.listeners.forEach((listener) => listener(queue))
+  }
+
+  /**
+   * 再生状態リスナーに通知
+   */
+  private notifyPlaybackStatusListeners(status: PlaybackStatus): void {
+    this.playbackStatusListeners.forEach((listener) => listener(status))
   }
 }

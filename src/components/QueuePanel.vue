@@ -1,14 +1,23 @@
 <template>
   <div class="queue-panel" :class="{ 'is-open': isOpen }">
     <!-- ヘッダー部分（クリックで開閉） -->
-    <div class="queue-header" @click="togglePanel">
+    <div v-if="true" class="queue-header" @click="togglePanel">
       <span>♪ Current Queue ♪</span>
     </div>
-
     <!-- スライドアップのアニメーション -->
     <transition name="slide-up">
       <!-- isOpen のときだけ中身を表示 -->
       <div v-if="isOpen" class="queue-body">
+        <!-- 再生時間情報 -->
+        <div v-if="playbackStatus" class="playback-info">
+          <div class="time-display">
+            {{ formattedCurrentTime }} / {{ formattedTotalTime }}
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: playbackProgress + '%' }"></div>
+          </div>
+        </div>
+
         <ul>
           <li>
             <button class="skip-button" @click.stop="handleSkipTrack" :disabled="queueItems.length === 0">
@@ -44,6 +53,10 @@ const {
   queueItems,
   isOpen,
   pendingTrackCount,
+  playbackStatus,
+  formattedCurrentTime,
+  formattedTotalTime,
+  playbackProgress,
   togglePanel,
   skipTrack,
   getAlbumCoverUrl,
@@ -83,6 +96,36 @@ async function handleSkipTrack() {
   padding: 8px;
   max-height: 300px;
   overflow-y: auto;
+}
+
+.playback-info {
+  background-color: #f0f0f0;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.time-display {
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #ddd;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.3s ease;
 }
 
 ul {

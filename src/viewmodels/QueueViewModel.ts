@@ -2,7 +2,7 @@
 import { ref, onUnmounted } from 'vue'
 import { QueueService } from '@/models/services/QueueService'
 import { MusicService } from '@/models/services/MusicService'
-import type { QueueItem } from '@/models/musicTypes'
+import type { QueueItem, PlaybackStatus } from '@/models/musicTypes'
 
 /**
  * キュー管理のViewModel
@@ -18,6 +18,7 @@ export class QueueViewModel {
   public readonly skipError = ref<string | null>(null)
   public readonly currentTrackCount = ref(0)
   public readonly isConnected = ref(false)
+  public readonly playbackStatus = ref<PlaybackStatus | null>(null)
 
   // コールバック
   public onSkipSuccess: ((message: string) => void) | null = null
@@ -27,6 +28,21 @@ export class QueueViewModel {
     this.queueService = QueueService.getInstance()
     this.musicService = MusicService.getInstance()
     this.setupQueueListener()
+    this.setupPlaybackStatusListener()
+  }
+
+  /**
+   * 現在再生中のトラックを取得
+   */
+  get currentTrack(): QueueItem | null {
+    return this.queueItems.value.find((item) => item.isCurrent) || null
+  }
+
+  /**
+   * 待機中のトラック数を取得
+   */
+  get pendingTrackCount(): number {
+    return this.queueItems.value.filter((item) => !item.isCurrent).length
   }
 
   /**
@@ -83,27 +99,6 @@ export class QueueViewModel {
   }
 
   /**
-   * 現在再生中のトラックを取得
-   */
-  get currentTrack(): QueueItem | null {
-    return this.queueItems.value.find((item) => item.isCurrent) || null
-  }
-
-  /**
-   * 待機中のトラック数を取得
-   */
-  get pendingTrackCount(): number {
-    return this.queueItems.value.filter((item) => !item.isCurrent).length
-  }
-
-  /**
-   * キューが空かどうか
-   */
-  get isEmpty(): boolean {
-    return this.queueItems.value.length === 0
-  }
-
-  /**
    * キューリスナーをセットアップ
    */
   private setupQueueListener(): void {
@@ -117,6 +112,22 @@ export class QueueViewModel {
     // クリーンアップ用にリスナーを保存
     onUnmounted(() => {
       this.queueService.removeQueueListener(listener)
+    })
+  }
+
+  /**
+   * 再生状態リスナーをセットアップ
+   */
+  private setupPlaybackStatusListener(): void {
+    const listener = (status: PlaybackStatus) => {
+      this.playbackStatus.value = status
+    }
+
+    this.queueService.addPlaybackStatusListener(listener)
+
+    // クリーンアップ用にリスナーを保存
+    onUnmounted(() => {
+      this.queueService.removePlaybackStatusListener(listener)
     })
   }
 

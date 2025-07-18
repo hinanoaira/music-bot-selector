@@ -1,5 +1,5 @@
 // src/composables/useQueueViewModel.ts
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, computed } from 'vue'
 import { QueueViewModel } from '@/viewmodels/QueueViewModel'
 import { useToastStore } from '@/stores/toast'
 import { useGuildParam } from '@/composables/useGuildParam'
@@ -25,6 +25,46 @@ export function useQueueViewModel() {
     }
   }
 
+  // 時間をフォーマット（秒 -> mm:ss）
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.floor(seconds % 60)
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
+
+  // 計算プロパティ
+  const currentTrack = computed(() => {
+    return queueViewModel.queueItems.value.find((item) => item.isCurrent) || null
+  })
+
+  const pendingTrackCount = computed(() => {
+    return queueViewModel.queueItems.value.filter((item) => !item.isCurrent).length
+  })
+
+  const isEmpty = computed(() => {
+    return queueViewModel.queueItems.value.length === 0
+  })
+
+  const formattedCurrentTime = computed(() => {
+    if (!queueViewModel.playbackStatus.value) return '0:00'
+    return formatTime(queueViewModel.playbackStatus.value.currentTime)
+  })
+
+  const formattedTotalTime = computed(() => {
+    if (!queueViewModel.playbackStatus.value) return '0:00'
+    return formatTime(queueViewModel.playbackStatus.value.totalTime)
+  })
+
+  const playbackProgress = computed(() => {
+    if (!queueViewModel.playbackStatus.value || queueViewModel.playbackStatus.value.totalTime === 0)
+      return 0
+    return (
+      (queueViewModel.playbackStatus.value.currentTime /
+        queueViewModel.playbackStatus.value.totalTime) *
+      100
+    )
+  })
+
   // ライフサイクル
   onMounted(() => {
     if (guildId.value) {
@@ -43,11 +83,15 @@ export function useQueueViewModel() {
     isSkipping: queueViewModel.isSkipping,
     currentTrackCount: queueViewModel.currentTrackCount,
     isConnected: queueViewModel.isConnected,
+    playbackStatus: queueViewModel.playbackStatus,
 
     // 計算プロパティ
-    currentTrack: queueViewModel.currentTrack,
-    pendingTrackCount: queueViewModel.pendingTrackCount,
-    isEmpty: queueViewModel.isEmpty,
+    currentTrack,
+    pendingTrackCount,
+    isEmpty,
+    formattedCurrentTime,
+    formattedTotalTime,
+    playbackProgress,
 
     // メソッド
     togglePanel: queueViewModel.togglePanel.bind(queueViewModel),

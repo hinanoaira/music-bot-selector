@@ -11,12 +11,22 @@ export interface QueueItem {
   title: string
   albumArtist: string
   isCurrent: boolean
+  duration?: number // 再生時間（秒）
+}
+
+// 再生状態の型定義
+export interface PlaybackStatus {
+  guildId: string
+  isPlaying: boolean
+  currentTime: number
+  totalTime: number
 }
 
 // WebSocketメッセージの型定義
 export interface WebSocketMessage {
-  type: 'queue' | 'ping' | 'pong'
+  type: 'queue' | 'ping' | 'pong' | 'playbackUpdate'
   data?: QueueItem[]
+  playbackStatus?: PlaybackStatus
 }
 
 // APIレスポンスの型定義
