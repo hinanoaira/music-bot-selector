@@ -1,19 +1,26 @@
 <template>
   <div class="track-list">
-    <BaseButton variant="back" @click="$emit('back')">
-      アルバム一覧に戻る
-    </BaseButton>
+    <BaseButton variant="back" @click="$emit('back')"> アルバム一覧に戻る </BaseButton>
 
     <TrackHeader :album-name="albumName" :cover-url="getAlbumCoverUrl(artistName, albumName)" />
 
     <BaseList>
       <!-- YouTube専用入力 -->
-      <YouTubeInput v-if="isYouTubeAlbum" v-model:url="youtubeUrl" :disabled="isRequestingYoutube"
-        @request="handleYouTubeRequest" />
+      <YouTubeInput
+        v-if="isYouTubeAlbum"
+        v-model:url="youtubeUrl"
+        :disabled="isRequestingYoutube"
+        @request="handleYouTubeRequest"
+      />
 
       <!-- 通常トラック -->
-      <TrackItem v-for="track in tracks" :key="track" :track-name="track" :disabled="!guildId"
-        @request="$emit('requestTrack', track)" />
+      <TrackItem
+        v-for="track in tracks"
+        :key="track"
+        :track-name="track"
+        :disabled="!guildId"
+        @request="$emit('requestTrack', track)"
+      />
     </BaseList>
   </div>
 </template>

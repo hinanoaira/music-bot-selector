@@ -1,7 +1,7 @@
 <template>
-    <ul class="base-list">
-        <slot />
-    </ul>
+  <ul class="base-list">
+    <slot />
+  </ul>
 </template>
 
 <script lang="ts" setup>
@@ -10,8 +10,8 @@
 
 <style scoped>
 .base-list {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
 }
 </style>

@@ -1,16 +1,17 @@
 <template>
   <div class="album-list">
-    <BaseButton variant="back" @click="$emit('back')">
-      アーティスト一覧に戻る
-    </BaseButton>
+    <BaseButton variant="back" @click="$emit('back')"> アーティスト一覧に戻る </BaseButton>
 
-    <BaseText tag="h2" variant="heading">
-      {{ artistName }} のアルバム一覧
-    </BaseText>
+    <BaseText tag="h2" variant="heading"> {{ artistName }} のアルバム一覧 </BaseText>
 
     <BaseList>
-      <AlbumItem v-for="album in albums" :key="album" :album-name="album"
-        :cover-url="getAlbumCoverUrl(artistName, album)" @click="$emit('selectAlbum', album)" />
+      <AlbumItem
+        v-for="album in albums"
+        :key="album"
+        :album-name="album"
+        :cover-url="getAlbumCoverUrl(artistName, album)"
+        @click="$emit('selectAlbum', album)"
+      />
     </BaseList>
   </div>
 </template>

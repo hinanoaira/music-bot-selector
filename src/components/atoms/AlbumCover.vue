@@ -11,7 +11,7 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   alt: 'Album cover',
-  size: 'medium'
+  size: 'medium',
 })
 </script>
 

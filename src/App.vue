@@ -11,9 +11,7 @@
     </main>
 
     <!-- フッター固定 -->
-    <footer class="footer">
-      &copy; 2025 Music Request Bot
-    </footer>
+    <footer class="footer">&copy; 2025 Music Request Bot</footer>
 
     <!-- 右下に常駐するキューリストパネル -->
     <QueuePanel v-if="guildId" class="Queue" />

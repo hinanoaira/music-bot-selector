@@ -3,8 +3,13 @@
     <BaseButton variant="primary" :disabled="!url || disabled" @click="handleRequest">
       リクエスト
     </BaseButton>
-    <BaseInput v-model="localUrl" :placeholder="disabled ? 'リクエスト処理中...' : 'URLを入力...'" :disabled="disabled"
-      style="width: 70%" @keydown.enter.prevent="handleEnterKey" />
+    <BaseInput
+      v-model="localUrl"
+      :placeholder="disabled ? 'リクエスト処理中...' : 'URLを入力...'"
+      :disabled="disabled"
+      style="width: 70%"
+      @keydown.enter.prevent="handleEnterKey"
+    />
   </ListItem>
 </template>
 
@@ -27,9 +32,12 @@ const emit = defineEmits<{
 
 const localUrl = ref(props.url)
 
-watch(() => props.url, (newValue) => {
-  localUrl.value = newValue
-})
+watch(
+  () => props.url,
+  (newValue) => {
+    localUrl.value = newValue
+  },
+)
 
 watch(localUrl, (newValue) => {
   emit('update:url', newValue)

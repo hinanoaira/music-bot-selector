@@ -1,6 +1,9 @@
 <template>
-  <button :class="['base-button', `base-button--${variant}`, { 'base-button--disabled': disabled }]"
-    :disabled="disabled" @click="$emit('click')">
+  <button
+    :class="['base-button', `base-button--${variant}`, { 'base-button--disabled': disabled }]"
+    :disabled="disabled"
+    @click="$emit('click')"
+  >
     <slot />
   </button>
 </template>
@@ -76,7 +79,9 @@ defineEmits<{
   justify-content: center;
   border-radius: 50%;
   opacity: 0.7;
-  transition: opacity 0.2s, background-color 0.2s;
+  transition:
+    opacity 0.2s,
+    background-color 0.2s;
 }
 
 .base-button--icon:hover:not(.base-button--disabled) {

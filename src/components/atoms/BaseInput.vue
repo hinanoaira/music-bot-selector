@@ -1,8 +1,13 @@
 <template>
-  <input :class="['base-input', { 'base-input--disabled': disabled }]" :type="type" :placeholder="placeholder"
-    :disabled="disabled" :value="modelValue"
+  <input
+    :class="['base-input', { 'base-input--disabled': disabled }]"
+    :type="type"
+    :placeholder="placeholder"
+    :disabled="disabled"
+    :value="modelValue"
     @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-    @keydown="$emit('keydown', $event)" />
+    @keydown="$emit('keydown', $event)"
+  />
 </template>
 
 <script lang="ts" setup>

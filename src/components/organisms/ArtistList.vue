@@ -1,10 +1,13 @@
 <template>
   <div class="artist-list">
-    <BaseText tag="h2" variant="heading">
-      アーティスト一覧
-    </BaseText>
+    <BaseText tag="h2" variant="heading"> アーティスト一覧 </BaseText>
     <BaseList>
-      <ListItem v-for="artist in artists" :key="artist" clickable @click="$emit('selectArtist', artist)">
+      <ListItem
+        v-for="artist in artists"
+        :key="artist"
+        clickable
+        @click="$emit('selectArtist', artist)"
+      >
         <BaseText tag="span" variant="body">
           {{ artist }}
         </BaseText>

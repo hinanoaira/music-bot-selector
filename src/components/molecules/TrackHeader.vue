@@ -1,9 +1,7 @@
 <template>
   <div class="track-header">
     <AlbumCover :src="coverUrl" :alt="`${albumName} album cover`" size="large" />
-    <BaseText tag="h2" variant="subheading">
-      {{ albumName }} のトラック
-    </BaseText>
+    <BaseText tag="h2" variant="subheading"> {{ albumName }} のトラック </BaseText>
   </div>
 </template>
 

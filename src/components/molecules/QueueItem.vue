@@ -7,9 +7,7 @@
         {{ title }}
         <BaseIcon v-if="isCurrent" type="music" size="12px" class="now-playing" />
       </BaseText>
-      <BaseText tag="div" variant="caption" class="meta">
-        {{ artist }} / {{ album }}
-      </BaseText>
+      <BaseText tag="div" variant="caption" class="meta"> {{ artist }} / {{ album }} </BaseText>
     </div>
   </ListItem>
 </template>

@@ -13,20 +13,33 @@
           <ArtistList :artists="artists" @select-artist="selectArtist" />
         </template>
         <template v-else>
-          <BaseText tag="p" variant="body">
-            アーティストを選んでください
-          </BaseText>
+          <BaseText tag="p" variant="body"> アーティストを選んでください </BaseText>
         </template>
       </template>
 
       <!-- 2) アーティスト選択済み & アルバム未選択 → アルバム一覧 -->
-      <AlbumList v-else-if="selectedArtist && !selectedAlbum" :artist-name="selectedArtist" :albums="albums"
-        :get-album-cover-url="getAlbumCoverUrl" @back="$router.go(-1)" @select-album="selectAlbum" />
+      <AlbumList
+        v-else-if="selectedArtist && !selectedAlbum"
+        :artist-name="selectedArtist"
+        :albums="albums"
+        :get-album-cover-url="getAlbumCoverUrl"
+        @back="$router.go(-1)"
+        @select-album="selectAlbum"
+      />
 
       <!-- 3) アルバム選択済み → トラック一覧 -->
-      <TrackList v-else-if="selectedAlbum" :artist-name="selectedArtist" :album-name="selectedAlbum" :tracks="tracks"
-        :guild-id="guildId" :is-requesting-youtube="isRequestingYoutube" :get-album-cover-url="getAlbumCoverUrl"
-        @back="$router.go(-1)" @request-track="requestTrack" @request-youtube-track="requestYoutubeTrack" />
+      <TrackList
+        v-else-if="selectedAlbum"
+        :artist-name="selectedArtist"
+        :album-name="selectedAlbum"
+        :tracks="tracks"
+        :guild-id="guildId"
+        :is-requesting-youtube="isRequestingYoutube"
+        :get-album-cover-url="getAlbumCoverUrl"
+        @back="$router.go(-1)"
+        @request-track="requestTrack"
+        @request-youtube-track="requestYoutubeTrack"
+      />
     </div>
   </div>
 </template>

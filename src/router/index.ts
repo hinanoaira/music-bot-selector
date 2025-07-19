@@ -8,10 +8,10 @@ const router = createRouter({
     {
       path: '/',
       name: 'MusicRequest',
-      component: MusicRequestView
-    }
+      component: MusicRequestView,
+    },
     // もしサブページがあれば追加
-  ]
+  ],
 })
 
 export default router

@@ -12,7 +12,7 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   tag: 'p',
-  variant: 'body'
+  variant: 'body',
 })
 </script>
 

@@ -1,12 +1,15 @@
 <template>
-  <li :class="[
-    'list-item',
-    `list-item--${variant}`,
-    {
-      'list-item--clickable': clickable,
-      'list-item--current': current
-    }
-  ]" @click="clickable && $emit('click')">
+  <li
+    :class="[
+      'list-item',
+      `list-item--${variant}`,
+      {
+        'list-item--clickable': clickable,
+        'list-item--current': current,
+      },
+    ]"
+    @click="clickable && $emit('click')"
+  >
     <slot />
   </li>
 </template>
@@ -21,7 +24,7 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   variant: 'default',
   clickable: false,
-  current: false
+  current: false,
 })
 
 defineEmits<{

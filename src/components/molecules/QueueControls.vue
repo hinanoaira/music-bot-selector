@@ -1,11 +1,7 @@
 <template>
   <ListItem variant="control">
-    <BaseButton variant="danger" :disabled="disabled" @click="$emit('skip')">
-      スキップ
-    </BaseButton>
-    <BaseText tag="span" variant="body">
-      現在のリクエスト数: {{ pendingCount }}
-    </BaseText>
+    <BaseButton variant="danger" :disabled="disabled" @click="$emit('skip')"> スキップ </BaseButton>
+    <BaseText tag="span" variant="body"> 現在のリクエスト数: {{ pendingCount }} </BaseText>
   </ListItem>
 </template>
 

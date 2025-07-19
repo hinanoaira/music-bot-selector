@@ -1,9 +1,7 @@
 <template>
   <div class="queue-header" @click="$emit('toggle')">
     <BaseIcon type="music" size="16px" />
-    <BaseText tag="span" variant="inherit">
-      Current Queue
-    </BaseText>
+    <BaseText tag="span" variant="inherit"> Current Queue </BaseText>
     <BaseIcon type="music" size="16px" />
   </div>
 </template>

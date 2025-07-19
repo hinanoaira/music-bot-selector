@@ -13,18 +13,25 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  size: '16px'
+  size: '16px',
 })
 
 const iconText = computed(() => {
   switch (props.type) {
-    case 'success': return '✓'
-    case 'error': return '✗'
-    case 'warning': return '⚠'
-    case 'info': return 'ℹ'
-    case 'music': return '♪'
-    case 'close': return '×'
-    default: return '?'
+    case 'success':
+      return '✓'
+    case 'error':
+      return '✗'
+    case 'warning':
+      return '⚠'
+    case 'info':
+      return 'ℹ'
+    case 'music':
+      return '♪'
+    case 'close':
+      return '×'
+    default:
+      return '?'
   }
 })
 </script>
