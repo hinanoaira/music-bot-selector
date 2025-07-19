@@ -91,8 +91,8 @@ export class MusicService {
         throw new Error('必要なパラメータが不足しています')
       }
       // URLの簡易バリデーション
-      if (!this.isValidYoutubeUrl(params.url)) {
-        throw new Error('有効なYouTube URLを入力してください')
+      if (!this.isValidUrl(params.url)) {
+        throw new Error('有効なURLを入力してください')
       }
       await this.musicRepository.requestYoutubeTrack(params)
       return true
@@ -126,10 +126,10 @@ export class MusicService {
   }
 
   /**
-   * YouTube URLの簡易バリデーション
+   * HTTP URLの簡易バリデーション
    */
-  private isValidYoutubeUrl(url: string): boolean {
-    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/
-    return youtubeRegex.test(url)
+  private isValidUrl(url: string): boolean {
+    const urlRegex = /^https?:\/\/.+/
+    return urlRegex.test(url)
   }
 }
