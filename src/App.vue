@@ -24,8 +24,8 @@
 </template>
 
 <script lang="ts" setup>
-import QueuePanel from '@/components/QueuePanel.vue'
-import ToastContainer from '@/components/ToastContainer.vue'
+import QueuePanel from '@/components/templates/QueuePanel.vue'
+import ToastContainer from '@/components/templates/ToastContainer.vue'
 import { useGuildParam } from '@/composables/useGuildParam'
 
 // guildid

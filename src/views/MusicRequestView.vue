@@ -2,12 +2,7 @@
   <div class="music-request-page">
     <!-- 左ペイン：アーティスト一覧 -->
     <div class="left-pane">
-      <h2>アーティスト一覧</h2>
-      <ul>
-        <li v-for="artist in artists" :key="artist" @click="selectArtist(artist)">
-          {{ artist }}
-        </li>
-      </ul>
+      <ArtistList :artists="artists" @select-artist="selectArtist" />
     </div>
 
     <!-- 右ペイン：アルバム / トラック -->
@@ -15,64 +10,23 @@
       <!-- 1) アーティスト未選択時 -->
       <template v-if="!selectedArtist">
         <template v-if="isMobile">
-          <h2>アーティスト一覧</h2>
-          <ul>
-            <li v-for="artist in artists" :key="artist" @click="selectArtist(artist)">
-              {{ artist }}
-            </li>
-          </ul>
+          <ArtistList :artists="artists" @select-artist="selectArtist" />
         </template>
         <template v-else>
-          <p>アーティストを選んでください</p>
+          <BaseText tag="p" variant="body">
+            アーティストを選んでください
+          </BaseText>
         </template>
       </template>
 
       <!-- 2) アーティスト選択済み & アルバム未選択 → アルバム一覧 -->
-      <template v-else-if="selectedArtist && !selectedAlbum">
-        <!-- アーティスト一覧に戻るボタン -->
-        <button class="back-button" @click="$router.go(-1)">
-          アーティスト一覧に戻る
-        </button>
-
-        <h2>{{ selectedArtist }} のアルバム一覧</h2>
-        <ul>
-          <li v-for="album in albums" :key="album" @click="selectAlbum(album)" class="album-item">
-            <!-- アルバムジャケット -->
-            <img class="album-cover" :src="getAlbumCoverUrl(selectedArtist, album)" alt="Album cover" />
-            <span class="album-name">{{ album }}</span>
-          </li>
-        </ul>
-      </template>
+      <AlbumList v-else-if="selectedArtist && !selectedAlbum" :artist-name="selectedArtist" :albums="albums"
+        :get-album-cover-url="getAlbumCoverUrl" @back="$router.go(-1)" @select-album="selectAlbum" />
 
       <!-- 3) アルバム選択済み → トラック一覧 -->
-      <template v-else-if="selectedAlbum">
-        <!-- アルバム一覧に戻るボタン -->
-        <button class="back-button" @click="$router.go(-1)">
-          アルバム一覧に戻る
-        </button>
-
-        <!-- ここで、アルバムジャケットを表示する -->
-        <div class="track-header">
-          <img class="album-cover-large" :src="getAlbumCoverUrl(selectedArtist, selectedAlbum)" alt="Album cover" />
-          <h2>{{ selectedAlbum }} のトラック</h2>
-        </div>
-
-        <!-- トラック一覧 -->
-        <ul>
-          <li v-if="selectedArtist === 'Youtube' && selectedAlbum === 'Youtube'">
-            <button @click="youtubeUrl && requestYoutubeTrack(youtubeUrl); youtubeUrl = ''"
-              :disabled="!guildId || !youtubeUrl || isRequestingYoutube">リクエスト</button>
-            <input type="text" v-model="youtubeUrl" :placeholder="isRequestingYoutube ? 'リクエスト処理中...' : 'URLを入力...'"
-              :disabled="isRequestingYoutube"
-              @keydown.enter.prevent="youtubeUrl && !isRequestingYoutube && (requestYoutubeTrack(youtubeUrl), youtubeUrl = '')"
-              style="width: 70%; max-width: 100%; box-sizing: border-box;" />
-          </li>
-          <li v-for="track in tracks" :key="track">
-            <button @click="requestTrack(track)" :disabled="!guildId">リクエスト</button>
-            {{ track }}
-          </li>
-        </ul>
-      </template>
+      <TrackList v-else-if="selectedAlbum" :artist-name="selectedArtist" :album-name="selectedAlbum" :tracks="tracks"
+        :guild-id="guildId" :is-requesting-youtube="isRequestingYoutube" :get-album-cover-url="getAlbumCoverUrl"
+        @back="$router.go(-1)" @request-track="requestTrack" @request-youtube-track="requestYoutubeTrack" />
     </div>
   </div>
 </template>
@@ -81,6 +35,10 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useMusicViewModelMVVM } from '@/composables/useMusicViewModelMVVM'
 import { useGuildParam } from '@/composables/useGuildParam'
+import BaseText from '@/components/atoms/BaseText.vue'
+import ArtistList from '@/components/organisms/ArtistList.vue'
+import AlbumList from '@/components/organisms/AlbumList.vue'
+import TrackList from '@/components/organisms/TrackList.vue'
 
 const { guildId } = useGuildParam()
 
@@ -106,9 +64,6 @@ const updateIsMobile = () => {
   isMobile.value = window.innerWidth <= 700
 }
 
-const youtubeUrl = ref('')
-
-
 onMounted(() => {
   init()
   window.addEventListener('resize', updateIsMobile)
@@ -125,7 +80,6 @@ onUnmounted(() => {
   display: flex;
   width: 100%;
   height: 100%;
-  /* 親 (.main)が calc(100% - ヘッダー＆フッター) なので、その100%を埋める */
 }
 
 /* 左ペイン */
@@ -146,68 +100,6 @@ onUnmounted(() => {
   box-sizing: border-box;
   height: 100%;
   overflow-y: auto;
-}
-
-/* リスト系共通スタイル */
-ul {
-  list-style: none;
-  padding-left: 0;
-  margin: 0;
-}
-
-li {
-  cursor: pointer;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  padding: 4px;
-  border: 1px solid #ccc;
-}
-
-li:hover {
-  background-color: #eee;
-}
-
-/* アルバム一覧アイテム */
-.album-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.album-cover {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.album-name {
-  flex: 1;
-}
-
-/* トラック一覧で使うヘッダー */
-.track-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-  gap: 16px;
-}
-
-.album-cover-large {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.back-button {
-  margin-bottom: 16px;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-
-button {
-  margin-left: 8px;
 }
 
 /* レスポンシブ対応：スマホ画面では左ペインを非表示に */
