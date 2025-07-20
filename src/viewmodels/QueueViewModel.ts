@@ -1,5 +1,5 @@
 // src/viewmodels/QueueViewModel.ts
-import { ref, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { QueueService } from '@/models/services/QueueService'
 import { MusicService } from '@/models/services/MusicService'
 import type { QueueItem, PlaybackStatus } from '@/models/musicTypes'
@@ -20,6 +20,32 @@ export class QueueViewModel {
   public readonly isConnected = ref(false)
   public readonly playbackStatus = ref<PlaybackStatus | null>(null)
 
+  // 計算プロパティ
+  public readonly currentTrack = computed(
+    () => this.queueItems.value.find((item) => item.isCurrent) || null,
+  )
+
+  public readonly pendingTrackCount = computed(
+    () => this.queueItems.value.filter((item) => !item.isCurrent).length,
+  )
+
+  public readonly isEmpty = computed(() => this.queueItems.value.length === 0)
+
+  public readonly formattedCurrentTime = computed(() => {
+    if (!this.playbackStatus.value) return '0:00'
+    return this.formatTime(this.playbackStatus.value.currentTime)
+  })
+
+  public readonly formattedTotalTime = computed(() => {
+    if (!this.playbackStatus.value) return '0:00'
+    return this.formatTime(this.playbackStatus.value.totalTime)
+  })
+
+  public readonly playbackProgress = computed(() => {
+    if (!this.playbackStatus.value || this.playbackStatus.value.totalTime === 0) return 0
+    return (this.playbackStatus.value.currentTime / this.playbackStatus.value.totalTime) * 100
+  })
+
   // コールバック
   public onSkipSuccess: ((message: string) => void) | null = null
   public onSkipError: ((message: string) => void) | null = null
@@ -32,17 +58,12 @@ export class QueueViewModel {
   }
 
   /**
-   * 現在再生中のトラックを取得
+   * 時間をフォーマット（秒 -> mm:ss）
    */
-  get currentTrack(): QueueItem | null {
-    return this.queueItems.value.find((item) => item.isCurrent) || null
-  }
-
-  /**
-   * 待機中のトラック数を取得
-   */
-  get pendingTrackCount(): number {
-    return this.queueItems.value.filter((item) => !item.isCurrent).length
+  private formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.floor(seconds % 60)
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
   /**

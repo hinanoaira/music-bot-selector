@@ -3,46 +3,67 @@
     <QueueHeader @toggle="togglePanel" />
 
     <transition name="slide-up">
-      <QueueBody
-        v-if="isOpen"
-        :queue-items="queueItems"
-        :pending-track-count="pendingTrackCount"
-        :playback-status="playbackStatus"
-        :formatted-current-time="formattedCurrentTime"
-        :formatted-total-time="formattedTotalTime"
-        :playback-progress="playbackProgress"
-        :get-cover-url="getCoverUrl"
-        @skip="handleSkipTrack"
-      />
+      <QueueBody v-if="isOpen" :queue-items="queueItems" :pending-track-count="pendingTrackCount"
+        :playback-status="playbackStatus" :formatted-current-time="formattedCurrentTime"
+        :formatted-total-time="formattedTotalTime" :playback-progress="playbackProgress" :get-cover-url="getCoverUrl"
+        @skip="handleSkipTrack" />
     </transition>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { useQueueViewModel } from '@/composables/useQueueViewModel'
+import { onMounted, onUnmounted } from 'vue'
+import { QueueViewModel } from '@/viewmodels/QueueViewModel'
+import { useToastStore } from '@/stores/toast'
+import { getGuildIdFromUrl } from '@/utils/urlParams'
 import QueueHeader from '@/components/molecules/QueueHeader.vue'
 import QueueBody from '@/components/organisms/QueueBody.vue'
 
-const {
-  queueItems,
-  isOpen,
-  pendingTrackCount,
-  playbackStatus,
-  formattedCurrentTime,
-  formattedTotalTime,
-  playbackProgress,
-  togglePanel,
-  skipTrack,
-  getAlbumCoverUrl,
-} = useQueueViewModel()
+const { showSuccess, showError } = useToastStore()
+const guildId = getGuildIdFromUrl()
+
+// ViewModelインスタンスを作成
+const queueViewModel = new QueueViewModel()
+
+// コールバック設定
+queueViewModel.onSkipSuccess = (message: string) => showSuccess(message)
+queueViewModel.onSkipError = (message: string) => showError(message)
+
+// スキップ処理
+const skipTrack = async () => {
+  if (guildId) {
+    await queueViewModel.skipCurrentTrack(guildId)
+  }
+}
 
 function getCoverUrl(albumArtist: string, album: string): string {
-  return getAlbumCoverUrl(albumArtist, album)
+  return queueViewModel.getAlbumCoverUrl(albumArtist, album)
 }
 
 async function handleSkipTrack() {
   await skipTrack()
 }
+
+// ライフサイクル
+onMounted(() => {
+  if (guildId) {
+    queueViewModel.connect(guildId)
+  }
+})
+
+onUnmounted(() => {
+  queueViewModel.disconnect()
+})
+
+// テンプレートで使用するプロパティ
+const queueItems = queueViewModel.queueItems
+const isOpen = queueViewModel.isOpen
+const pendingTrackCount = queueViewModel.pendingTrackCount
+const playbackStatus = queueViewModel.playbackStatus
+const formattedCurrentTime = queueViewModel.formattedCurrentTime
+const formattedTotalTime = queueViewModel.formattedTotalTime
+const playbackProgress = queueViewModel.playbackProgress
+const togglePanel = queueViewModel.togglePanel.bind(queueViewModel)
 </script>
 
 <style scoped>

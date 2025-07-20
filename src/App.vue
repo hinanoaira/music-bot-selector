@@ -24,10 +24,10 @@
 <script lang="ts" setup>
 import QueuePanel from '@/components/templates/QueuePanel.vue'
 import ToastContainer from '@/components/templates/ToastContainer.vue'
-import { useGuildParam } from '@/composables/useGuildParam'
+import { getGuildIdFromUrl } from '@/utils/urlParams'
 
 // guildid
-const { guildId } = useGuildParam()
+const guildId = getGuildIdFromUrl()
 </script>
 
 <style scoped>

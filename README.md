@@ -25,7 +25,7 @@ src/
 │   ├── NavigationViewModel.ts
 │   └── QueueViewModel.ts
 ├── composables/             # View層とViewModel層の橋渡し
-│   ├── useMusicViewModelMVVM.ts
+│   ├── useMusicViewModel.ts
 │   ├── useQueueViewModel.ts
 │   └── useGuildParam.ts
 ├── views/                   # View層（ページ）
