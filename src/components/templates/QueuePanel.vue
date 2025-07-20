@@ -3,10 +3,17 @@
     <QueueHeader @toggle="$emit('toggle')" />
 
     <transition name="slide-up">
-      <QueueBody v-if="isOpen" :queue-items="queueItems" :pending-track-count="pendingTrackCount"
-        :playback-status="playbackStatus" :formatted-current-time="formattedCurrentTime"
-        :formatted-total-time="formattedTotalTime" :playback-progress="playbackProgress" :get-cover-url="getCoverUrl"
-        @skip="$emit('skip')" />
+      <QueueBody
+        v-if="isOpen"
+        :queue-items="queueItems"
+        :pending-track-count="pendingTrackCount"
+        :playback-status="playbackStatus"
+        :formatted-current-time="formattedCurrentTime"
+        :formatted-total-time="formattedTotalTime"
+        :playback-progress="playbackProgress"
+        :get-cover-url="getCoverUrl"
+        @skip="$emit('skip')"
+      />
     </transition>
   </div>
 </template>

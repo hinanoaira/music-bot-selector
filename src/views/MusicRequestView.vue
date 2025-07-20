@@ -1,10 +1,21 @@
 <template>
   <div class="music-request-page">
-    <MusicBrowser :artists="artists" :albums="albums" :tracks="tracks" :selected-artist="selectedArtist"
-      :selected-album="selectedAlbum" :guild-id="guildId" :is-requesting-youtube="isRequestingYoutube"
-      :get-album-cover-url="getAlbumCoverUrl" :is-mobile="isMobile" @select-artist="selectArtist"
-      @select-album="selectAlbum" @request-track="requestTrack" @request-youtube-track="requestYoutubeTrack"
-      @back="router.back()" />
+    <MusicBrowser
+      :artists="artists"
+      :albums="albums"
+      :tracks="tracks"
+      :selected-artist="selectedArtist"
+      :selected-album="selectedAlbum"
+      :guild-id="guildId"
+      :is-requesting-youtube="isRequestingYoutube"
+      :get-album-cover-url="getAlbumCoverUrl"
+      :is-mobile="isMobile"
+      @select-artist="selectArtist"
+      @select-album="selectAlbum"
+      @request-track="requestTrack"
+      @request-youtube-track="requestYoutubeTrack"
+      @back="router.back()"
+    />
   </div>
 </template>
 
@@ -34,6 +45,8 @@ watch(
 
       if (album && typeof album === 'string') {
         await viewModel.selectAlbum(album)
+      } else {
+        viewModel.resetAlbumSelection()
       }
     } else {
       viewModel.resetSelection()
@@ -43,7 +56,11 @@ watch(
 )
 
 const selectArtist = async (artist: string) => {
-  await router.push({ name: 'ArtistSelected', params: { artist } })
+  await router.push({
+    name: 'ArtistSelected',
+    params: { artist },
+    query: route.query,
+  })
 }
 
 const selectAlbum = async (album: string) => {
@@ -54,6 +71,7 @@ const selectAlbum = async (album: string) => {
         artist: route.params.artist,
         album,
       },
+      query: route.query,
     })
   }
 }

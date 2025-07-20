@@ -1,9 +1,17 @@
 <template>
   <div v-if="guildId" class="queue-view">
-    <QueuePanel :queue-items="queueItems" :is-open="isQueueOpen" :pending-track-count="pendingTrackCount"
-      :playback-status="playbackStatus" :formatted-current-time="formattedCurrentTime"
-      :formatted-total-time="formattedTotalTime" :playback-progress="playbackProgress" :get-cover-url="getAlbumCoverUrl"
-      @toggle="toggleQueue" @skip="skipTrack" />
+    <QueuePanel
+      :queue-items="queueItems"
+      :is-open="isQueueOpen"
+      :pending-track-count="pendingTrackCount"
+      :playback-status="playbackStatus"
+      :formatted-current-time="formattedCurrentTime"
+      :formatted-total-time="formattedTotalTime"
+      :playback-progress="playbackProgress"
+      :get-cover-url="getAlbumCoverUrl"
+      @toggle="toggleQueue"
+      @skip="skipTrack"
+    />
   </div>
 </template>
 

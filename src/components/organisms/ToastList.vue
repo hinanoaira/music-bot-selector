@@ -1,8 +1,14 @@
 <template>
   <div class="toast-container">
     <transition-group name="toast" tag="div">
-      <ToastItem v-for="toast in toasts" :key="toast.id" :message="toast.message" :type="toast.type"
-        @click="$emit('removeToast', toast.id)" @close="$emit('removeToast', toast.id)" />
+      <ToastItem
+        v-for="toast in toasts"
+        :key="toast.id"
+        :message="toast.message"
+        :type="toast.type"
+        @click="$emit('removeToast', toast.id)"
+        @close="$emit('removeToast', toast.id)"
+      />
     </transition-group>
   </div>
 </template>
