@@ -5,7 +5,7 @@ import type {
   Track,
   TrackRequestParams,
   YoutubeRequestParams,
-} from '../models/types/musicTypes'
+} from '../models/types/music-types'
 
 /**
  * 音楽ビジネスロジック層

@@ -1,6 +1,6 @@
 import { QueueService } from '@/services/QueueService'
 import { MusicService } from '@/services/MusicService'
-import type { QueueItem, PlaybackStatus } from './types/musicTypes'
+import type { QueueItem, PlaybackStatus } from './types/music-types'
 
 /**
  * キュー管理のビジネスロジックを担当するModel

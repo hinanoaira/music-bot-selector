@@ -3,17 +3,10 @@
     <QueueHeader @toggle="$emit('toggle')" />
 
     <transition name="slide-up">
-      <QueueBody
-        v-if="isOpen"
-        :queue-items="queueItems"
-        :pending-track-count="pendingTrackCount"
-        :playback-status="playbackStatus"
-        :formatted-current-time="formattedCurrentTime"
-        :formatted-total-time="formattedTotalTime"
-        :playback-progress="playbackProgress"
-        :get-cover-url="getCoverUrl"
-        @skip="$emit('skip')"
-      />
+      <QueueBody v-if="isOpen" :queue-items="queueItems" :pending-track-count="pendingTrackCount"
+        :playback-status="playbackStatus" :formatted-current-time="formattedCurrentTime"
+        :formatted-total-time="formattedTotalTime" :playback-progress="playbackProgress" :get-cover-url="getCoverUrl"
+        @skip="$emit('skip')" />
     </transition>
   </div>
 </template>
@@ -21,7 +14,7 @@
 <script lang="ts" setup>
 import QueueHeader from '@/components/molecules/QueueHeader.vue'
 import QueueBody from '@/components/organisms/QueueBody.vue'
-import type { QueueItem, PlaybackStatus } from '@/models/types/musicTypes'
+import type { QueueItem, PlaybackStatus } from '@/models/types/music-types'
 
 interface Props {
   queueItems: QueueItem[]

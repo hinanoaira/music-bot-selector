@@ -1,17 +1,9 @@
 <template>
   <div v-if="guildId" class="queue-view">
-    <QueuePanel
-      :queue-items="queueItems"
-      :is-open="isQueueOpen"
-      :pending-track-count="pendingTrackCount"
-      :playback-status="playbackStatus"
-      :formatted-current-time="formattedCurrentTime"
-      :formatted-total-time="formattedTotalTime"
-      :playback-progress="playbackProgress"
-      :get-cover-url="getAlbumCoverUrl"
-      @toggle="toggleQueue"
-      @skip="skipTrack"
-    />
+    <QueuePanel :queue-items="queueItems" :is-open="isQueueOpen" :pending-track-count="pendingTrackCount"
+      :playback-status="playbackStatus" :formatted-current-time="formattedCurrentTime"
+      :formatted-total-time="formattedTotalTime" :playback-progress="playbackProgress" :get-cover-url="getAlbumCoverUrl"
+      @toggle="toggleQueue" @skip="skipTrack" />
   </div>
 </template>
 
@@ -19,8 +11,8 @@
 import { onMounted, onUnmounted } from 'vue'
 import { QueueViewModel } from '@/viewmodels/QueueViewModel'
 import { MusicService } from '@/services/MusicService'
-import { useToastStore } from '@/stores/toast'
-import { getGuildIdFromUrl } from '@/utils/urlParams'
+import { useToastStore } from '@/stores/toast.store'
+import { getGuildIdFromUrl } from '@/utils/url-params'
 import QueuePanel from '@/components/templates/QueuePanel.vue'
 
 const guildId = getGuildIdFromUrl()

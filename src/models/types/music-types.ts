@@ -1,4 +1,4 @@
-// src/models/musicTypes.ts
+// src/models/types/music-types.ts
 export type Artist = string
 export type Album = string
 export type Track = string

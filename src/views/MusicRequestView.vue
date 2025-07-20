@@ -1,21 +1,10 @@
 <template>
   <div class="music-request-page">
-    <MusicBrowser
-      :artists="artists"
-      :albums="albums"
-      :tracks="tracks"
-      :selected-artist="selectedArtist"
-      :selected-album="selectedAlbum"
-      :guild-id="guildId"
-      :is-requesting-youtube="isRequestingYoutube"
-      :get-album-cover-url="getAlbumCoverUrl"
-      :is-mobile="isMobile"
-      @select-artist="selectArtist"
-      @select-album="selectAlbum"
-      @request-track="requestTrack"
-      @request-youtube-track="requestYoutubeTrack"
-      @back="router.back()"
-    />
+    <MusicBrowser :artists="artists" :albums="albums" :tracks="tracks" :selected-artist="selectedArtist"
+      :selected-album="selectedAlbum" :guild-id="guildId" :is-requesting-youtube="isRequestingYoutube"
+      :get-album-cover-url="getAlbumCoverUrl" :is-mobile="isMobile" @select-artist="selectArtist"
+      @select-album="selectAlbum" @request-track="requestTrack" @request-youtube-track="requestYoutubeTrack"
+      @back="router.back()" />
   </div>
 </template>
 
@@ -23,8 +12,8 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { MusicRequestViewModel } from '@/viewmodels/MusicRequestViewModel'
-import { useToastStore } from '@/stores/toast'
-import { getGuildIdFromUrl } from '@/utils/urlParams'
+import { useToastStore } from '@/stores/toast.store'
+import { getGuildIdFromUrl } from '@/utils/url-params'
 import MusicBrowser from '@/components/templates/MusicBrowser.vue'
 
 const router = useRouter()

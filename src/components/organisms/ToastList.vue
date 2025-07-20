@@ -1,21 +1,15 @@
 <template>
   <div class="toast-container">
     <transition-group name="toast" tag="div">
-      <ToastItem
-        v-for="toast in toasts"
-        :key="toast.id"
-        :message="toast.message"
-        :type="toast.type"
-        @click="$emit('removeToast', toast.id)"
-        @close="$emit('removeToast', toast.id)"
-      />
+      <ToastItem v-for="toast in toasts" :key="toast.id" :message="toast.message" :type="toast.type"
+        @click="$emit('removeToast', toast.id)" @close="$emit('removeToast', toast.id)" />
     </transition-group>
   </div>
 </template>
 
 <script lang="ts" setup>
 import ToastItem from '@/components/molecules/ToastItem.vue'
-import type { ToastMessage } from '@/stores/toast'
+import type { ToastMessage } from '@/stores/toast.store'
 
 interface Props {
   toasts: ToastMessage[]

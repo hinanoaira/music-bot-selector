@@ -18,7 +18,7 @@ src/
 │   ├── services/            # ビジネスロジック層
 │   │   ├── MusicService.ts
 │   │   └── QueueService.ts    # WebSocket通信とキュー管理
-│   └── musicTypes.ts        # 型定義（QueueItem、PlaybackStatus等）
+│   └── music-types.ts       # 型定義（QueueItem、PlaybackStatus等）
 ├── viewmodels/              # ViewModel層
 │   ├── MusicViewModel.ts
 │   ├── MusicRequestViewModel.ts

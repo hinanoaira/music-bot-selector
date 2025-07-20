@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { MusicRequestModel } from '@/models/MusicRequestModel'
-import type { Artist, Album, Track } from '@/models/types/musicTypes'
+import type { Artist, Album, Track } from '@/models/types/music-types'
 
 /**
  * 音楽リクエスト画面のViewModel

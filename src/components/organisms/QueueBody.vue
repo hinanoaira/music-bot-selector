@@ -1,28 +1,13 @@
 <template>
   <div class="queue-body">
-    <PlaybackInfo
-      v-if="playbackStatus"
-      :formatted-current-time="formattedCurrentTime"
-      :formatted-total-time="formattedTotalTime"
-      :progress="playbackProgress"
-    />
+    <PlaybackInfo v-if="playbackStatus" :formatted-current-time="formattedCurrentTime"
+      :formatted-total-time="formattedTotalTime" :progress="playbackProgress" />
 
     <BaseList class="queue-list">
-      <QueueControls
-        :pending-count="pendingTrackCount"
-        :disabled="queueItems.length === 0"
-        @skip="$emit('skip')"
-      />
+      <QueueControls :pending-count="pendingTrackCount" :disabled="queueItems.length === 0" @skip="$emit('skip')" />
 
-      <QueueItem
-        v-for="(item, index) in queueItems"
-        :key="index"
-        :title="item.title"
-        :artist="item.artist"
-        :album="item.album"
-        :cover-url="getCoverUrl(item.albumArtist, item.album)"
-        :is-current="item.isCurrent"
-      />
+      <QueueItem v-for="(item, index) in queueItems" :key="index" :title="item.title" :artist="item.artist"
+        :album="item.album" :cover-url="getCoverUrl(item.albumArtist, item.album)" :is-current="item.isCurrent" />
     </BaseList>
   </div>
 </template>
@@ -32,7 +17,7 @@ import PlaybackInfo from '@/components/molecules/PlaybackInfo.vue'
 import QueueControls from '@/components/molecules/QueueControls.vue'
 import QueueItem from '@/components/molecules/QueueItem.vue'
 import BaseList from '@/components/atoms/BaseList.vue'
-import type { QueueItem as QueueItemType, PlaybackStatus } from '@/models/types/musicTypes'
+import type { QueueItem as QueueItemType, PlaybackStatus } from '@/models/types/music-types'
 
 interface Props {
   queueItems: QueueItemType[]

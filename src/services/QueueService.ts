@@ -1,5 +1,5 @@
-import { API_CONFIG } from '@/config/api'
-import type { QueueItem, WebSocketMessage, PlaybackStatus } from '../models/types/musicTypes'
+import { API_CONFIG } from '@/config/api.config'
+import type { QueueItem, WebSocketMessage, PlaybackStatus } from '../models/types/music-types'
 
 /**
  * キューサービス - WebSocket通信とキュー管理

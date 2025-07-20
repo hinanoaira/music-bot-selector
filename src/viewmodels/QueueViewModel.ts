@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { QueueModel } from '@/models/QueueModel'
-import type { QueueItem, PlaybackStatus } from '@/models/types/musicTypes'
+import type { QueueItem, PlaybackStatus } from '@/models/types/music-types'
 
 /**
  * キュー管理のViewModel

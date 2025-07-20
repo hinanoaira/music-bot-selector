@@ -1,11 +1,11 @@
-import { API_CONFIG } from '@/config/api'
+import { API_CONFIG } from '@/config/api.config'
 import type {
   Artist,
   Album,
   Track,
   TrackRequestParams,
   YoutubeRequestParams,
-} from '../models/types/musicTypes'
+} from '../models/types/music-types'
 
 /**
  * 音楽データアクセス層
