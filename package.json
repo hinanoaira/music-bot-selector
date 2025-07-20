@@ -9,8 +9,11 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "npm run prettier:write",
+    "prettier:check": "prettier --check src/",
+    "prettier:write": "prettier --write src/"
   },
   "dependencies": {
     "pinia": "^2.3.1",

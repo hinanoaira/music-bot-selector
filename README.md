@@ -183,7 +183,7 @@ npm run preview
 
 ```bash
 # ESLintによるリンティング（自動修正付き）
-npm run lint
+npm run lint:fix
 
 # Prettierによるコードフォーマット
 npm run format
