@@ -1,6 +1,6 @@
 <template>
   <div class="queue-panel" :class="{ 'is-open': isOpen }">
-    <QueueHeader @toggle="togglePanel" />
+    <QueueHeader @toggle="$emit('toggle')" />
 
     <transition name="slide-up">
       <QueueBody
@@ -12,72 +12,38 @@
         :formatted-total-time="formattedTotalTime"
         :playback-progress="playbackProgress"
         :get-cover-url="getCoverUrl"
-        @skip="handleSkipTrack"
+        @skip="$emit('skip')"
       />
     </transition>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted } from 'vue'
-import { QueueViewModel } from '@/viewmodels/QueueViewModel'
-import { useToastStore } from '@/stores/toast'
-import { getGuildIdFromUrl } from '@/utils/urlParams'
 import QueueHeader from '@/components/molecules/QueueHeader.vue'
 import QueueBody from '@/components/organisms/QueueBody.vue'
+import type { QueueItem, PlaybackStatus } from '@/models/types/musicTypes'
 
-const { showSuccess, showError } = useToastStore()
-const guildId = getGuildIdFromUrl()
-
-// ViewModelインスタンスを作成
-const queueViewModel = new QueueViewModel()
-
-// コールバック設定
-queueViewModel.onSkipSuccess = (message: string) => showSuccess(message)
-queueViewModel.onSkipError = (message: string) => showError(message)
-
-// スキップ処理
-const skipTrack = async () => {
-  if (guildId) {
-    await queueViewModel.skipCurrentTrack(guildId)
-  }
+interface Props {
+  queueItems: QueueItem[]
+  isOpen: boolean
+  pendingTrackCount: number
+  playbackStatus: PlaybackStatus | null
+  formattedCurrentTime: string
+  formattedTotalTime: string
+  playbackProgress: number
+  getCoverUrl: (albumArtist: string, album: string) => string
 }
 
-function getCoverUrl(albumArtist: string, album: string): string {
-  return queueViewModel.getAlbumCoverUrl(albumArtist, album)
-}
+defineProps<Props>()
 
-async function handleSkipTrack() {
-  await skipTrack()
-}
-
-// ライフサイクル
-onMounted(() => {
-  if (guildId) {
-    queueViewModel.connect(guildId)
-  }
-})
-
-onUnmounted(() => {
-  queueViewModel.disconnect()
-})
-
-// テンプレートで使用するプロパティ
-const queueItems = queueViewModel.queueItems
-const isOpen = queueViewModel.isOpen
-const pendingTrackCount = queueViewModel.pendingTrackCount
-const playbackStatus = queueViewModel.playbackStatus
-const formattedCurrentTime = queueViewModel.formattedCurrentTime
-const formattedTotalTime = queueViewModel.formattedTotalTime
-const playbackProgress = queueViewModel.playbackProgress
-const togglePanel = queueViewModel.togglePanel.bind(queueViewModel)
+defineEmits<{
+  toggle: []
+  skip: []
+}>()
 </script>
 
 <style scoped>
 .queue-panel {
-  position: fixed;
-  right: 16px;
-  bottom: 0;
   width: 320px;
   border: 1px solid #ccc;
   border-radius: 8px 8px 0 0;
@@ -85,7 +51,6 @@ const togglePanel = queueViewModel.togglePanel.bind(queueViewModel)
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* スライドアップトランジション */
 .slide-up-enter-active,
 .slide-up-leave-active {
   transition: transform 0.3s ease;

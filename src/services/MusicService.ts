@@ -1,6 +1,11 @@
-// src/models/services/MusicService.ts
 import { MusicRepository } from '../repositories/MusicRepository'
-import type { Artist, Album, Track, TrackRequestParams, YoutubeRequestParams } from '../musicTypes'
+import type {
+  Artist,
+  Album,
+  Track,
+  TrackRequestParams,
+  YoutubeRequestParams,
+} from '../models/types/musicTypes'
 
 /**
  * 音楽ビジネスロジック層

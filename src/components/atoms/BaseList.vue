@@ -4,9 +4,7 @@
   </ul>
 </template>
 
-<script lang="ts" setup>
-// プロパティは不要 - スロットで内容を受け取る
-</script>
+<script lang="ts" setup></script>
 
 <style scoped>
 .base-list {

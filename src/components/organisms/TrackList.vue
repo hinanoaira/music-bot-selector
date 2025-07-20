@@ -5,7 +5,6 @@
     <TrackHeader :album-name="albumName" :cover-url="getAlbumCoverUrl(artistName, albumName)" />
 
     <BaseList>
-      <!-- YouTube専用入力 -->
       <YouTubeInput
         v-if="isYouTubeAlbum"
         v-model:url="youtubeUrl"
@@ -13,7 +12,6 @@
         @request="handleYouTubeRequest"
       />
 
-      <!-- 通常トラック -->
       <TrackItem
         v-for="track in tracks"
         :key="track"

@@ -40,7 +40,6 @@ defineProps<Props>()
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-  /* flexboxでのテキスト省略のために必要 */
 }
 
 .title {

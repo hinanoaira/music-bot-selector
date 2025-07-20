@@ -1,6 +1,5 @@
-// src/models/services/QueueService.ts
 import { API_CONFIG } from '@/config/api'
-import type { QueueItem, WebSocketMessage, PlaybackStatus } from '../musicTypes'
+import type { QueueItem, WebSocketMessage, PlaybackStatus } from '../models/types/musicTypes'
 
 /**
  * キューサービス - WebSocket通信とキュー管理
@@ -24,7 +23,7 @@ export class QueueService {
    */
   connect(guildId: string): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      return // 既に接続中
+      return
     }
 
     const wsUrl = `${API_CONFIG.WS_URL}?guildid=${encodeURIComponent(guildId)}`

@@ -57,6 +57,4 @@ const handleEnterKey = () => {
 }
 </script>
 
-<style scoped>
-/* ListItemのvariant="track"でスタイリング */
-</style>
+<style scoped></style>

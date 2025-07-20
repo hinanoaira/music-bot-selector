@@ -1,6 +1,11 @@
-// src/models/repositories/MusicRepository.ts
 import { API_CONFIG } from '@/config/api'
-import type { Artist, Album, Track, TrackRequestParams, YoutubeRequestParams } from '../musicTypes'
+import type {
+  Artist,
+  Album,
+  Track,
+  TrackRequestParams,
+  YoutubeRequestParams,
+} from '../models/types/musicTypes'
 
 /**
  * 音楽データアクセス層

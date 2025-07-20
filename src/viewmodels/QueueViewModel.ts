@@ -1,17 +1,13 @@
-// src/viewmodels/QueueViewModel.ts
-import { ref, computed, onUnmounted } from 'vue'
-import { QueueService } from '@/models/services/QueueService'
-import { MusicService } from '@/models/services/MusicService'
-import type { QueueItem, PlaybackStatus } from '@/models/musicTypes'
+import { ref, computed } from 'vue'
+import { QueueModel } from '@/models/QueueModel'
+import type { QueueItem, PlaybackStatus } from '@/models/types/musicTypes'
 
 /**
  * キュー管理のViewModel
  */
 export class QueueViewModel {
-  private queueService: QueueService
-  private musicService: MusicService
+  private queueModel: QueueModel
 
-  // 状態
   public readonly queueItems = ref<QueueItem[]>([])
   public readonly isOpen = ref(false)
   public readonly isSkipping = ref(false)
@@ -20,7 +16,14 @@ export class QueueViewModel {
   public readonly isConnected = ref(false)
   public readonly playbackStatus = ref<PlaybackStatus | null>(null)
 
-  // 計算プロパティ
+  private eventListeners: {
+    skipSuccess: Array<(message: string) => void>
+    skipError: Array<(message: string) => void>
+  } = {
+    skipSuccess: [],
+    skipError: [],
+  }
+
   public readonly currentTrack = computed(
     () => this.queueItems.value.find((item) => item.isCurrent) || null,
   )
@@ -33,12 +36,12 @@ export class QueueViewModel {
 
   public readonly formattedCurrentTime = computed(() => {
     if (!this.playbackStatus.value) return '0:00'
-    return this.formatTime(this.playbackStatus.value.currentTime)
+    return this.queueModel.formatTime(this.playbackStatus.value.currentTime)
   })
 
   public readonly formattedTotalTime = computed(() => {
     if (!this.playbackStatus.value) return '0:00'
-    return this.formatTime(this.playbackStatus.value.totalTime)
+    return this.queueModel.formatTime(this.playbackStatus.value.totalTime)
   })
 
   public readonly playbackProgress = computed(() => {
@@ -46,31 +49,55 @@ export class QueueViewModel {
     return (this.playbackStatus.value.currentTime / this.playbackStatus.value.totalTime) * 100
   })
 
-  // コールバック
   public onSkipSuccess: ((message: string) => void) | null = null
   public onSkipError: ((message: string) => void) | null = null
 
   constructor() {
-    this.queueService = QueueService.getInstance()
-    this.musicService = MusicService.getInstance()
+    this.queueModel = QueueModel.getInstance()
     this.setupQueueListener()
     this.setupPlaybackStatusListener()
   }
 
   /**
-   * 時間をフォーマット（秒 -> mm:ss）
+   * イベントリスナーを追加
    */
-  private formatTime(seconds: number): string {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = Math.floor(seconds % 60)
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  addEventListener<T extends keyof typeof this.eventListeners>(
+    event: T,
+    listener: (typeof this.eventListeners)[T][0],
+  ): void {
+    this.eventListeners[event].push(listener as never)
+  }
+
+  /**
+   * イベントリスナーを削除
+   */
+  removeEventListener<T extends keyof typeof this.eventListeners>(
+    event: T,
+    listener: (typeof this.eventListeners)[T][0],
+  ): void {
+    const index = this.eventListeners[event].indexOf(listener as never)
+    if (index > -1) {
+      this.eventListeners[event].splice(index, 1)
+    }
+  }
+
+  /**
+   * イベントを発火
+   */
+  private emit<T extends keyof typeof this.eventListeners>(
+    event: T,
+    ...args: Parameters<(typeof this.eventListeners)[T][0]>
+  ): void {
+    this.eventListeners[event].forEach((listener) => {
+      ;(listener as (...args: unknown[]) => void)(...args)
+    })
   }
 
   /**
    * WebSocket接続を開始
    */
   connect(guildId: string): void {
-    this.queueService.connect(guildId)
+    this.queueModel.connect(guildId)
     this.isConnected.value = true
   }
 
@@ -78,7 +105,7 @@ export class QueueViewModel {
    * WebSocket接続を切断
    */
   disconnect(): void {
-    this.queueService.disconnect()
+    this.queueModel.disconnect()
     this.isConnected.value = false
   }
 
@@ -93,7 +120,7 @@ export class QueueViewModel {
    * 現在のトラックをスキップ
    */
   async skipCurrentTrack(guildId: string): Promise<void> {
-    if (this.queueItems.value.length === 0) {
+    if (!this.queueModel.canSkip(this.queueItems.value)) {
       this.handleSkipError('スキップできるトラックがありません')
       return
     }
@@ -102,7 +129,7 @@ export class QueueViewModel {
     this.skipError.value = null
 
     try {
-      await this.musicService.skipTrack(guildId)
+      await this.queueModel.skipTrack(guildId)
       this.handleSkipSuccess('トラックをスキップしました')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'スキップに失敗しました'
@@ -116,7 +143,7 @@ export class QueueViewModel {
    * アルバムカバーURLを取得
    */
   getAlbumCoverUrl(albumArtist: string, album: string): string {
-    return this.musicService.getAlbumCoverUrl(albumArtist, album)
+    return this.queueModel.getAlbumCoverUrl(albumArtist, album)
   }
 
   /**
@@ -128,12 +155,7 @@ export class QueueViewModel {
       this.currentTrackCount.value = queue.filter((item) => !item.isCurrent).length
     }
 
-    this.queueService.addQueueListener(listener)
-
-    // クリーンアップ用にリスナーを保存
-    onUnmounted(() => {
-      this.queueService.removeQueueListener(listener)
-    })
+    this.queueModel.onQueueUpdate(listener)
   }
 
   /**
@@ -144,21 +166,14 @@ export class QueueViewModel {
       this.playbackStatus.value = status
     }
 
-    this.queueService.addPlaybackStatusListener(listener)
-
-    // クリーンアップ用にリスナーを保存
-    onUnmounted(() => {
-      this.queueService.removePlaybackStatusListener(listener)
-    })
+    this.queueModel.onPlaybackUpdate(listener)
   }
 
   /**
    * スキップ成功時の処理
    */
   private handleSkipSuccess(message: string): void {
-    if (this.onSkipSuccess) {
-      this.onSkipSuccess(message)
-    }
+    this.emit('skipSuccess', message)
   }
 
   /**
@@ -166,8 +181,6 @@ export class QueueViewModel {
    */
   private handleSkipError(message: string): void {
     this.skipError.value = message
-    if (this.onSkipError) {
-      this.onSkipError(message)
-    }
+    this.emit('skipError', message)
   }
 }

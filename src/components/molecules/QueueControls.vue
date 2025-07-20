@@ -21,6 +21,4 @@ defineEmits<{
 }>()
 </script>
 
-<style scoped>
-/* ListItemのvariant="control"でスタイリング */
-</style>
+<style scoped></style>

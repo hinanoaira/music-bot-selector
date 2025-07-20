@@ -1,33 +1,24 @@
 <template>
   <div id="app">
-    <!-- ヘッダー固定 -->
     <header class="header">
       <h2>あいらの音楽Bot リクエスト</h2>
     </header>
 
-    <!-- メイン -->
     <main class="main">
       <RouterView />
     </main>
 
-    <!-- フッター固定 -->
     <footer class="footer">&copy; 2025 Music Request Bot</footer>
 
-    <!-- 右下に常駐するキューリストパネル -->
-    <QueuePanel v-if="guildId" class="Queue" />
+    <QueueView />
 
-    <!-- トースト通知 -->
     <ToastContainer />
   </div>
 </template>
 
 <script lang="ts" setup>
-import QueuePanel from '@/components/templates/QueuePanel.vue'
+import QueueView from '@/views/QueueView.vue'
 import ToastContainer from '@/components/templates/ToastContainer.vue'
-import { getGuildIdFromUrl } from '@/utils/urlParams'
-
-// guildid
-const guildId = getGuildIdFromUrl()
 </script>
 
 <style scoped>
@@ -45,7 +36,6 @@ body {
   height: 100%;
 }
 
-/* ヘッダー */
 .header {
   position: fixed;
   top: 0;
@@ -60,7 +50,6 @@ body {
   z-index: 10;
 }
 
-/* フッター */
 .footer {
   position: fixed;
   bottom: 0;
@@ -75,7 +64,6 @@ body {
   z-index: 10;
 }
 
-/* main領域：ヘッダー＆フッターを除いた高さを確保してoverflow: hidden; */
 .main {
   position: absolute;
   top: 60px;
@@ -83,7 +71,6 @@ body {
   left: 0;
   right: 0;
   overflow: hidden;
-  /* 中のコンポーネントでスクロールするイメージ */
   background-color: #f8f8f8;
 }
 

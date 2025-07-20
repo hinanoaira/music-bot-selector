@@ -1,38 +1,167 @@
-// src/viewmodels/MusicRequestViewModel.ts
-import { ref } from 'vue'
-import { MusicService } from '@/models/services/MusicService'
-import type { Artist, Album, Track } from '@/models/musicTypes'
+import { ref, computed } from 'vue'
+import { MusicRequestModel } from '@/models/MusicRequestModel'
+import type { Artist, Album, Track } from '@/models/types/musicTypes'
 
 /**
- * 音楽リクエストのViewModel
+ * 音楽リクエスト画面のViewModel
+ * 音楽データ管理、リクエスト処理を担当
  */
 export class MusicRequestViewModel {
-  private musicService: MusicService
+  private musicRequestModel: MusicRequestModel
 
-  // 状態
+  public readonly artists = ref<Artist[]>([])
+  public readonly albums = ref<Album[]>([])
+  public readonly tracks = ref<Track[]>([])
+  public readonly selectedArtist = ref<Artist | null>(null)
+  public readonly selectedAlbum = ref<Album | null>(null)
+  public readonly isLoading = ref(false)
+  public readonly error = ref<string | null>(null)
+
   public readonly isRequestingTrack = ref(false)
   public readonly isRequestingYoutube = ref(false)
   public readonly requestError = ref<string | null>(null)
 
-  // 成功・エラーコールバック
-  public onRequestSuccess: ((message: string) => void) | null = null
-  public onRequestError: ((message: string) => void) | null = null
+  private eventListeners: {
+    requestSuccess: Array<(message: string) => void>
+    requestError: Array<(message: string) => void>
+  } = {
+    requestSuccess: [],
+    requestError: [],
+  }
+
+  public readonly hasArtists = computed(() => this.artists.value.length > 0)
+  public readonly hasAlbums = computed(() => this.albums.value.length > 0)
+  public readonly hasTracks = computed(() => this.tracks.value.length > 0)
+  public readonly isArtistSelected = computed(() => this.selectedArtist.value !== null)
+  public readonly isAlbumSelected = computed(() => this.selectedAlbum.value !== null)
 
   constructor() {
-    this.musicService = MusicService.getInstance()
+    this.musicRequestModel = MusicRequestModel.getInstance()
+  }
+
+  /**
+   * イベントリスナーを追加
+   */
+  addEventListener<T extends keyof typeof this.eventListeners>(
+    event: T,
+    listener: (typeof this.eventListeners)[T][0],
+  ): void {
+    this.eventListeners[event].push(listener as never)
+  }
+
+  /**
+   * イベントリスナーを削除
+   */
+  removeEventListener<T extends keyof typeof this.eventListeners>(
+    event: T,
+    listener: (typeof this.eventListeners)[T][0],
+  ): void {
+    const index = this.eventListeners[event].indexOf(listener as never)
+    if (index > -1) {
+      this.eventListeners[event].splice(index, 1)
+    }
+  }
+
+  /**
+   * イベントを発火
+   */
+  private emit<T extends keyof typeof this.eventListeners>(
+    event: T,
+    ...args: Parameters<(typeof this.eventListeners)[T][0]>
+  ): void {
+    this.eventListeners[event].forEach((listener) => {
+      ;(listener as (...args: unknown[]) => void)(...args)
+    })
+  }
+
+  /**
+   * 初期化処理
+   */
+  async initialize(): Promise<void> {
+    this.isLoading.value = true
+    this.error.value = null
+
+    try {
+      this.artists.value = await this.musicRequestModel.getArtists()
+    } catch (error) {
+      this.error.value = error instanceof Error ? error.message : 'アーティストの取得に失敗しました'
+      console.error('IntegratedMusicRequestViewModel.initialize error:', error)
+    } finally {
+      this.isLoading.value = false
+    }
+  }
+
+  /**
+   * アーティストを選択
+   */
+  async selectArtist(artist: Artist): Promise<void> {
+    if (this.musicRequestModel.shouldResetAlbumSelection(this.selectedArtist.value, artist)) {
+      this.selectedAlbum.value = null
+      this.tracks.value = []
+    }
+
+    this.selectedArtist.value = artist
+    this.albums.value = []
+
+    try {
+      this.albums.value = await this.musicRequestModel.selectArtist(artist)
+    } catch (error) {
+      this.error.value = error instanceof Error ? error.message : 'アルバムの取得に失敗しました'
+      console.error('selectArtist error:', error)
+    }
+  }
+
+  /**
+   * アルバムを選択
+   */
+  async selectAlbum(album: Album): Promise<void> {
+    if (this.musicRequestModel.shouldResetTrackSelection(this.selectedAlbum.value, album)) {
+      this.tracks.value = []
+    }
+
+    this.selectedAlbum.value = album
+
+    if (!this.selectedArtist.value) return
+
+    try {
+      this.tracks.value = await this.musicRequestModel.selectAlbum(this.selectedArtist.value, album)
+    } catch (error) {
+      this.error.value = error instanceof Error ? error.message : 'トラックの取得に失敗しました'
+      console.error('selectAlbum error:', error)
+    }
+  }
+
+  /**
+   * 選択状態をリセット
+   */
+  resetSelection(): void {
+    this.selectedArtist.value = null
+    this.selectedAlbum.value = null
+    this.albums.value = []
+    this.tracks.value = []
+  }
+
+  /**
+   * アルバム選択をリセット
+   */
+  resetAlbumSelection(): void {
+    this.selectedAlbum.value = null
+    this.tracks.value = []
   }
 
   /**
    * 通常のトラックをリクエスト
    */
-  async requestTrack(
-    artist: Artist | null,
-    album: Album | null,
-    track: Track,
-    guildId: string | null,
-  ): Promise<void> {
-    if (!artist || !album || !guildId) {
-      this.handleError('必要な情報が不足しています')
+  async requestTrack(track: Track, guildId: string | null): Promise<void> {
+    if (
+      !this.musicRequestModel.validateTrackRequest(
+        this.selectedArtist.value,
+        this.selectedAlbum.value,
+        track,
+        guildId || '',
+      )
+    ) {
+      this.handleRequestError('必要なパラメータが不足しています')
       return
     }
 
@@ -40,11 +169,16 @@ export class MusicRequestViewModel {
     this.requestError.value = null
 
     try {
-      await this.musicService.requestTrack({ artist, album, track, guildId })
-      this.handleSuccess(`「${track}」をリクエストしました！`)
+      await this.musicRequestModel.requestTrack({
+        artist: this.selectedArtist.value!,
+        album: this.selectedAlbum.value!,
+        track,
+        guildId: guildId!,
+      })
+      this.handleRequestSuccess(`「${track}」をリクエストしました`)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'リクエストに失敗しました'
-      this.handleError(message)
+      this.handleRequestError(message)
     } finally {
       this.isRequestingTrack.value = false
     }
@@ -54,8 +188,8 @@ export class MusicRequestViewModel {
    * YouTubeトラックをリクエスト
    */
   async requestYoutubeTrack(url: string, guildId: string | null): Promise<void> {
-    if (!guildId) {
-      this.handleError('ギルドIDが設定されていません')
+    if (!this.musicRequestModel.validateYoutubeRequest(url, guildId || '')) {
+      this.handleRequestError('URLまたはguildIdが不足しています')
       return
     }
 
@@ -63,39 +197,35 @@ export class MusicRequestViewModel {
     this.requestError.value = null
 
     try {
-      await this.musicService.requestYoutubeTrack({ url, guildId })
-      this.handleSuccess('YouTubeトラックをリクエストしました！')
+      await this.musicRequestModel.requestYoutubeTrack({ url, guildId: guildId! })
+      this.handleRequestSuccess('YouTubeトラックをリクエストしました')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'YouTubeリクエストに失敗しました'
-      this.handleError(message)
+      this.handleRequestError(message)
     } finally {
       this.isRequestingYoutube.value = false
     }
   }
 
   /**
-   * リクエスト処理中かどうか
+   * アルバムカバーURLを取得
    */
-  get isRequesting(): boolean {
-    return this.isRequestingTrack.value || this.isRequestingYoutube.value
+  getAlbumCoverUrl(artist: Artist, album: Album): string {
+    return this.musicRequestModel.getAlbumCoverUrl(artist, album)
   }
 
   /**
-   * 成功時の処理
+   * リクエスト成功時の処理
    */
-  private handleSuccess(message: string): void {
-    if (this.onRequestSuccess) {
-      this.onRequestSuccess(message)
-    }
+  private handleRequestSuccess(message: string): void {
+    this.emit('requestSuccess', message)
   }
 
   /**
-   * エラー時の処理
+   * リクエストエラー時の処理
    */
-  private handleError(message: string): void {
+  private handleRequestError(message: string): void {
     this.requestError.value = message
-    if (this.onRequestError) {
-      this.onRequestError(message)
-    }
+    this.emit('requestError', message)
   }
 }

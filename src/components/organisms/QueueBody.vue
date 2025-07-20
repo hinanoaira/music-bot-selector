@@ -32,7 +32,7 @@ import PlaybackInfo from '@/components/molecules/PlaybackInfo.vue'
 import QueueControls from '@/components/molecules/QueueControls.vue'
 import QueueItem from '@/components/molecules/QueueItem.vue'
 import BaseList from '@/components/atoms/BaseList.vue'
-import type { QueueItem as QueueItemType, PlaybackStatus } from '@/models/musicTypes'
+import type { QueueItem as QueueItemType, PlaybackStatus } from '@/models/types/musicTypes'
 
 interface Props {
   queueItems: QueueItemType[]

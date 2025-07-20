@@ -14,92 +14,76 @@
       @select-album="selectAlbum"
       @request-track="requestTrack"
       @request-youtube-track="requestYoutubeTrack"
-      @back="$router.go(-1)"
+      @back="router.back()"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { MusicViewModel } from '@/viewmodels/MusicViewModel'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { MusicRequestViewModel } from '@/viewmodels/MusicRequestViewModel'
-import { NavigationViewModel } from '@/viewmodels/NavigationViewModel'
 import { useToastStore } from '@/stores/toast'
 import { getGuildIdFromUrl } from '@/utils/urlParams'
 import MusicBrowser from '@/components/templates/MusicBrowser.vue'
 
+const router = useRouter()
+const route = useRoute()
 const guildId = getGuildIdFromUrl()
 const { showSuccess, showError } = useToastStore()
 
-// ViewModelインスタンスを作成
-const musicViewModel = new MusicViewModel()
-const requestViewModel = new MusicRequestViewModel()
-const navigationViewModel = new NavigationViewModel()
+const viewModel = new MusicRequestViewModel()
 
-// コールバック設定
-requestViewModel.onRequestSuccess = (message: string) => showSuccess(message)
-requestViewModel.onRequestError = (message: string) => showError(message)
+viewModel.addEventListener('requestSuccess', showSuccess)
+viewModel.addEventListener('requestError', showError)
 
-// ナビゲーション処理
-const handlePopState = (event: PopStateEvent) => {
-  const result = navigationViewModel.handlePopState(event)
+watch(
+  () => [route.params.artist, route.params.album],
+  async ([artist, album]) => {
+    if (artist && typeof artist === 'string') {
+      await viewModel.selectArtist(artist)
 
-  switch (result.action) {
-    case 'resetAll':
-      musicViewModel.resetSelection()
-      navigationViewModel.restoreScrollPosition(result.scrollPosition)
-      break
-    case 'resetAlbum':
-      musicViewModel.resetAlbumSelection()
-      navigationViewModel.restoreScrollPosition(result.scrollPosition)
-      break
-    case 'selectArtist':
-      if (result.artist && musicViewModel.selectedArtist.value !== result.artist) {
-        musicViewModel.selectArtist(result.artist)
+      if (album && typeof album === 'string') {
+        await viewModel.selectAlbum(album)
       }
-      musicViewModel.resetAlbumSelection()
-      navigationViewModel.restoreScrollPosition(result.scrollPosition)
-      break
-  }
+    } else {
+      viewModel.resetSelection()
+    }
+  },
+  { immediate: true },
+)
+
+const selectArtist = async (artist: string) => {
+  await router.push({ name: 'ArtistSelected', params: { artist } })
 }
 
-// アーティスト選択処理
-const selectArtist = async (artist: string, pushHistory = true) => {
-  if (pushHistory) {
-    navigationViewModel.navigateToArtist(artist)
-  }
-  await musicViewModel.selectArtist(artist)
-}
-
-// アルバム選択処理
 const selectAlbum = async (album: string) => {
-  navigationViewModel.navigateToAlbum(album)
-  await musicViewModel.selectAlbum(album)
+  if (route.params.artist) {
+    await router.push({
+      name: 'AlbumSelected',
+      params: {
+        artist: route.params.artist,
+        album,
+      },
+    })
+  }
 }
 
-// トラックリクエスト処理
 const requestTrack = async (track: string) => {
-  await requestViewModel.requestTrack(
-    musicViewModel.selectedArtist.value,
-    musicViewModel.selectedAlbum.value,
-    track,
-    guildId,
-  )
+  await viewModel.requestTrack(track, guildId)
 }
 
-// YouTubeリクエスト処理
 const requestYoutubeTrack = async (url: string) => {
-  await requestViewModel.requestYoutubeTrack(url, guildId)
+  await viewModel.requestYoutubeTrack(url, guildId)
 }
 
-// テンプレートで使用するプロパティ
-const artists = musicViewModel.artists
-const albums = musicViewModel.albums
-const tracks = musicViewModel.tracks
-const selectedArtist = musicViewModel.selectedArtist
-const selectedAlbum = musicViewModel.selectedAlbum
-const isRequestingYoutube = requestViewModel.isRequestingYoutube
-const getAlbumCoverUrl = musicViewModel.getAlbumCoverUrl.bind(musicViewModel)
+const artists = viewModel.artists
+const albums = viewModel.albums
+const tracks = viewModel.tracks
+const selectedArtist = viewModel.selectedArtist
+const selectedAlbum = viewModel.selectedAlbum
+const isRequestingYoutube = viewModel.isRequestingYoutube
+const getAlbumCoverUrl = viewModel.getAlbumCoverUrl.bind(viewModel)
 
 const isMobile = ref(window.innerWidth <= 700)
 
@@ -108,14 +92,14 @@ const updateIsMobile = () => {
 }
 
 onMounted(() => {
-  musicViewModel.initialize()
+  viewModel.initialize()
   window.addEventListener('resize', updateIsMobile)
-  window.addEventListener('popstate', handlePopState)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateIsMobile)
-  window.removeEventListener('popstate', handlePopState)
+  viewModel.removeEventListener('requestSuccess', showSuccess)
+  viewModel.removeEventListener('requestError', showError)
 })
 </script>
 

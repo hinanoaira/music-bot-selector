@@ -36,7 +36,6 @@ defineEmits<{
   pointer-events: none;
 }
 
-/* アニメーション */
 .toast-enter-active,
 .toast-leave-active {
   transition: all 0.3s ease;

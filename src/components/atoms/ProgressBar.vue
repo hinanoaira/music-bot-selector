@@ -6,7 +6,7 @@
 
 <script lang="ts" setup>
 interface Props {
-  progress: number // 0-100の値
+  progress: number
 }
 
 defineProps<Props>()

@@ -1,13 +1,10 @@
 <template>
   <div class="music-browser">
-    <!-- 左ペイン：アーティスト一覧 -->
     <div class="left-pane">
       <ArtistList :artists="artists" @select-artist="$emit('selectArtist', $event)" />
     </div>
 
-    <!-- 右ペイン：アルバム / トラック -->
     <div class="right-pane">
-      <!-- 1) アーティスト未選択時 -->
       <template v-if="!selectedArtist">
         <template v-if="isMobile">
           <ArtistList :artists="artists" @select-artist="$emit('selectArtist', $event)" />
@@ -17,7 +14,6 @@
         </template>
       </template>
 
-      <!-- 2) アーティスト選択済み & アルバム未選択 → アルバム一覧 -->
       <AlbumList
         v-else-if="selectedArtist && !selectedAlbum"
         :artist-name="selectedArtist"
@@ -27,7 +23,6 @@
         @select-album="$emit('selectAlbum', $event)"
       />
 
-      <!-- 3) アルバム選択済み → トラック一覧 -->
       <TrackList
         v-else-if="selectedAlbum"
         :artist-name="selectedArtist"
@@ -64,7 +59,6 @@ interface Props {
 
 defineProps<Props>()
 
-// emits定義
 defineEmits<{
   selectArtist: [artist: string]
   selectAlbum: [album: string]
@@ -81,7 +75,6 @@ defineEmits<{
   height: 100%;
 }
 
-/* 左ペイン */
 .left-pane {
   width: 320px;
   padding: 16px;
@@ -92,7 +85,6 @@ defineEmits<{
   overflow-y: auto;
 }
 
-/* 右ペイン */
 .right-pane {
   flex: 1;
   padding: 16px;
@@ -101,7 +93,6 @@ defineEmits<{
   overflow-y: auto;
 }
 
-/* レスポンシブ対応：スマホ画面では左ペインを非表示に */
 @media (max-width: 700px) {
   .left-pane {
     display: none;

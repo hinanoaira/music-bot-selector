@@ -26,14 +26,12 @@ defineEmits<{
 </script>
 
 <style scoped>
-/* リクエストボタンの改行を防ぐ */
 :deep(.base-button) {
   white-space: nowrap;
   flex-shrink: 0;
   min-width: fit-content;
 }
 
-/* TrackItemのレイアウト調整 */
 :deep(.list-item--track) {
   flex-wrap: nowrap;
 }

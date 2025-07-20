@@ -1,5 +1,3 @@
-// src/utils/urlParams.ts
-
 /**
  * URLクエリパラメータからguildIdを取得
  */
