@@ -11,25 +11,23 @@ Vue 3 + TypeScript + MVVM パターンによる音楽ボットセレクター
 ```
 src/
 ├── config/                    # 設定ファイル
-│   └── api.ts                # API設定とエンドポイント（WebSocket含む）
+│   └── api.config.ts         # API設定とエンドポイント（WebSocket含む）
 ├── models/                   # Model層
-│   ├── repositories/         # データアクセス層
-│   │   └── MusicRepository.ts
-│   ├── services/            # ビジネスロジック層
-│   │   ├── MusicService.ts
-│   │   └── QueueService.ts    # WebSocket通信とキュー管理
-│   └── music-types.ts       # 型定義（QueueItem、PlaybackStatus等）
+│   ├── MusicRequestModel.ts  # 音楽リクエストモデル
+│   ├── QueueModel.ts         # キューモデル
+│   └── types/               # 型定義
+│       └── music-types.ts   # 音楽関連の型定義（QueueItem、PlaybackStatus等）
+├── repositories/            # データアクセス層
+│   └── MusicRepository.ts
+├── services/                # ビジネスロジック層
+│   ├── MusicService.ts
+│   └── QueueService.ts      # WebSocket通信とキュー管理
 ├── viewmodels/              # ViewModel層
-│   ├── MusicViewModel.ts
 │   ├── MusicRequestViewModel.ts
-│   ├── NavigationViewModel.ts
 │   └── QueueViewModel.ts
-├── composables/             # View層とViewModel層の橋渡し
-│   ├── useMusicViewModel.ts
-│   ├── useQueueViewModel.ts
-│   └── useGuildParam.ts
 ├── views/                   # View層（ページ）
-│   └── MusicRequestView.vue
+│   ├── MusicRequestView.vue
+│   └── QueueView.vue
 ├── components/              # View層（コンポーネント）
 │   ├── atoms/               # 最小単位のコンポーネント
 │   │   ├── AlbumCover.vue
@@ -57,12 +55,15 @@ src/
 │   │   ├── ToastList.vue
 │   │   └── TrackList.vue
 │   └── templates/           # ページレベルのレイアウトコンポーネント
+│       ├── MusicBrowser.vue   # 音楽ブラウザーレイアウト
 │       ├── QueuePanel.vue     # キュー表示・操作パネル
 │       └── ToastContainer.vue # 通知表示
 ├── stores/                  # 状態管理（Pinia）
-│   └── toast.ts
+│   └── toast.store.ts
 ├── router/                  # ルーティング
 │   └── index.ts
+├── utils/                   # ユーティリティ関数
+│   └── url-params.ts       # URLパラメータ処理
 ├── assets/                  # 静的ファイル
 │   ├── base.css
 │   ├── logo.svg
@@ -82,9 +83,7 @@ src/
 
 ### **ViewModel層**
 
-- **MusicViewModel**: 音楽データの状態管理
 - **MusicRequestViewModel**: リクエスト処理の状態管理
-- **NavigationViewModel**: ナビゲーション状態管理
 - **QueueViewModel**: キュー管理とWebSocket通信
 
 ### **View層（Atomic Design）**
@@ -94,7 +93,6 @@ src/
 - **Molecules**: 複数のatomsを組み合わせた意味のある単位
 - **Atoms**: 最小単位の再利用可能なUIコンポーネント
 - **Views**: ページコンポーネント
-- **Composables**: ViewModelとViewの橋渡し
 
 ## 📋 主要機能
 
@@ -143,7 +141,7 @@ src/
 
 - **MVVM (Model-View-ViewModel)**: ビジネスロジックとUIの分離
 - **Atomic Design**: コンポーネントの階層的設計
-- **Composable Pattern**: ロジックの再利用性向上
+- **Repository Pattern**: データアクセス層の抽象化
 
 ### 推奨IDE
 
