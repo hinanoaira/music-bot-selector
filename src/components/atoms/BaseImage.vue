@@ -1,5 +1,5 @@
 <template>
-  <img :class="['album-cover', `album-cover--${size}`]" :src="src" :alt="alt" />
+  <img :class="['base-image', `base-image--${size}`]" :src="src" :alt="alt" />
 </template>
 
 <script lang="ts" setup>
@@ -10,28 +10,28 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  alt: 'Album cover',
+  alt: 'Image',
   size: 'medium',
 })
 </script>
 
 <style scoped>
-.album-cover {
+.base-image {
   object-fit: cover;
   border-radius: 4px;
 }
 
-.album-cover--small {
+.base-image--small {
   width: 48px;
   height: 48px;
 }
 
-.album-cover--medium {
+.base-image--medium {
   width: 48px;
   height: 48px;
 }
 
-.album-cover--large {
+.base-image--large {
   width: 80px;
   height: 80px;
 }

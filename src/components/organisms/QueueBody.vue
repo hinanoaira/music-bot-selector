@@ -28,9 +28,7 @@
 </template>
 
 <script lang="ts" setup>
-import PlaybackInfo from '@/components/molecules/PlaybackInfo.vue'
-import QueueControls from '@/components/molecules/QueueControls.vue'
-import QueueItem from '@/components/molecules/QueueItem.vue'
+import { PlaybackInfo, QueueControls, QueueItem } from '@/components/organisms/queue'
 import BaseList from '@/components/atoms/BaseList.vue'
 import type { QueueItem as QueueItemType, PlaybackStatus } from '@/models/types/music-types'
 

@@ -1,34 +1,22 @@
 <template>
-  <div class="artist-list">
-    <BaseText tag="h2" variant="heading"> アーティスト一覧 </BaseText>
-    <BaseList>
-      <ListItem
-        v-for="artist in artists"
-        :key="artist"
-        clickable
-        @click="$emit('selectArtist', artist)"
-      >
-        <BaseText tag="span" variant="body">
-          {{ artist }}
-        </BaseText>
-      </ListItem>
-    </BaseList>
-  </div>
+  <SelectableList title="アーティスト一覧" :items="artists" @select-item="handleSelectArtist" />
 </template>
 
 <script lang="ts" setup>
-import BaseText from '@/components/atoms/BaseText.vue'
-import BaseList from '@/components/atoms/BaseList.vue'
-import ListItem from '@/components/molecules/ListItem.vue'
+import SelectableList from '@/components/molecules/SelectableList.vue'
 
 interface Props {
   artists: string[]
 }
 
 defineProps<Props>()
-defineEmits<{
+const emit = defineEmits<{
   selectArtist: [artist: string]
 }>()
+
+const handleSelectArtist = (item: unknown) => {
+  emit('selectArtist', item as string)
+}
 </script>
 
 <style scoped>

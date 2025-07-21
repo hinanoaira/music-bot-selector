@@ -1,30 +1,45 @@
 <template>
-  <ListItem variant="track">
-    <BaseButton variant="primary" :disabled="!url || disabled" @click="handleRequest">
-      リクエスト
+  <BaseListItem :variant="variant">
+    <BaseButton :variant="buttonVariant" :disabled="!url || disabled" @click="handleRequest">
+      {{ actionText }}
     </BaseButton>
     <BaseInput
       v-model="localUrl"
-      :placeholder="disabled ? 'リクエスト処理中...' : 'URLを入力...'"
+      :placeholder="disabled ? processingText : placeholderText"
       :disabled="disabled"
-      style="width: 70%"
+      :style="inputStyle"
       @keydown.enter.prevent="handleEnterKey"
     />
-  </ListItem>
+  </BaseListItem>
 </template>
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
 import BaseButton from '@/components/atoms/BaseButton.vue'
 import BaseInput from '@/components/atoms/BaseInput.vue'
-import ListItem from '@/components/molecules/ListItem.vue'
+import BaseListItem from '@/components/atoms/BaseListItem.vue'
 
 interface Props {
   url: string
+  actionText?: string
+  placeholderText?: string
+  processingText?: string
+  variant?: 'default' | 'track' | 'queue' | 'control'
+  buttonVariant?: 'primary' | 'secondary' | 'danger' | 'back' | 'icon'
+  inputStyle?: string
   disabled?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  actionText: 'Submit',
+  placeholderText: 'Enter URL...',
+  processingText: 'Processing...',
+  variant: 'default',
+  buttonVariant: 'primary',
+  inputStyle: 'width: 70%',
+  disabled: false,
+})
+
 const emit = defineEmits<{
   'update:url': [value: string]
   request: [url: string]

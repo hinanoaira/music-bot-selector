@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts" setup>
-import QueueHeader from '@/components/molecules/QueueHeader.vue'
+import { QueueHeader } from '@/components/organisms/queue'
 import QueueBody from '@/components/organisms/QueueBody.vue'
 import type { QueueItem, PlaybackStatus } from '@/models/types/music-types'
 

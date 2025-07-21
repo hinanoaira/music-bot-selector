@@ -2,22 +2,33 @@
   <div class="track-list">
     <BaseButton variant="back" @click="$emit('back')"> アルバム一覧に戻る </BaseButton>
 
-    <TrackHeader :album-name="albumName" :cover-url="getAlbumCoverUrl(artistName, albumName)" />
+    <ContentHeader
+      :title="`${albumName} のトラック`"
+      :image-url="getAlbumCoverUrl(artistName, albumName)"
+      :image-alt="`${albumName} album cover`"
+      image-size="large"
+    />
 
     <BaseList>
-      <YouTubeInput
+      <UrlInputListItem
         v-if="isYouTubeAlbum"
         v-model:url="youtubeUrl"
         :disabled="isRequestingYoutube"
+        action-text="リクエスト"
+        placeholder-text="URLを入力..."
+        processing-text="リクエスト処理中..."
+        variant="track"
         @request="handleYouTubeRequest"
       />
 
-      <TrackItem
+      <ActionListItem
         v-for="track in tracks"
         :key="track"
-        :track-name="track"
+        :label="track"
+        action-text="リクエスト"
+        variant="track"
         :disabled="!guildId"
-        @request="$emit('requestTrack', track)"
+        @action="$emit('requestTrack', track)"
       />
     </BaseList>
   </div>
@@ -27,9 +38,9 @@
 import { ref, computed } from 'vue'
 import BaseButton from '@/components/atoms/BaseButton.vue'
 import BaseList from '@/components/atoms/BaseList.vue'
-import TrackHeader from '@/components/molecules/TrackHeader.vue'
-import TrackItem from '@/components/molecules/TrackItem.vue'
-import YouTubeInput from '@/components/molecules/YouTubeInput.vue'
+import ContentHeader from '@/components/molecules/ContentHeader.vue'
+import ActionListItem from '@/components/molecules/ActionListItem.vue'
+import UrlInputListItem from '@/components/molecules/UrlInputListItem.vue'
 
 interface Props {
   artistName: string
