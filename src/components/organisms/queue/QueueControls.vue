@@ -8,7 +8,7 @@
 <script lang="ts" setup>
 import BaseButton from '@/components/atoms/BaseButton.vue'
 import BaseText from '@/components/atoms/BaseText.vue'
-import ListItem from '@/components/molecules/ListItem.vue'
+import ListItem from '@/components/atoms/BaseListItem.vue'
 
 interface Props {
   pendingCount: number

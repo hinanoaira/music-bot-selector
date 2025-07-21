@@ -1,26 +1,28 @@
 <template>
-  <div class="album-list">
-    <BaseButton variant="back" @click="$emit('back')"> アーティスト一覧に戻る </BaseButton>
-
-    <BaseText tag="h2" variant="heading"> {{ artistName }} のアルバム一覧 </BaseText>
-
-    <BaseList>
-      <AlbumItem
-        v-for="album in albums"
-        :key="album"
-        :album-name="album"
-        :cover-url="getAlbumCoverUrl(artistName, album)"
-        @click="$emit('selectAlbum', album)"
+  <NavigableList
+    :title="`${artistName} のアルバム一覧`"
+    :items="albums"
+    back-button-text="アーティスト一覧に戻る"
+    :get-item-label="getItemLabel"
+    :get-item-image="getItemImage"
+    @back="$emit('back')"
+    @select-item="handleSelectAlbum"
+  >
+    <template #item="{ item, selectItem }">
+      <ContentCard
+        :title="item as string"
+        :image-url="props.getAlbumCoverUrl(props.artistName, item as string)"
+        :image-alt="`${item} album cover`"
+        variant="track"
+        @click="selectItem(item)"
       />
-    </BaseList>
-  </div>
+    </template>
+  </NavigableList>
 </template>
 
 <script lang="ts" setup>
-import BaseButton from '@/components/atoms/BaseButton.vue'
-import BaseText from '@/components/atoms/BaseText.vue'
-import BaseList from '@/components/atoms/BaseList.vue'
-import AlbumItem from '@/components/molecules/AlbumItem.vue'
+import NavigableList from '@/components/organisms/NavigableList.vue'
+import ContentCard from '@/components/molecules/ContentCard.vue'
 
 interface Props {
   artistName: string
@@ -28,11 +30,19 @@ interface Props {
   getAlbumCoverUrl: (artist: string, album: string) => string
 }
 
-defineProps<Props>()
-defineEmits<{
+const props = defineProps<Props>()
+const emit = defineEmits<{
   back: []
   selectAlbum: [album: string]
 }>()
+
+const getItemLabel = (album: unknown): string => album as string
+const getItemImage = (album: unknown): string =>
+  props.getAlbumCoverUrl(props.artistName, album as string)
+
+const handleSelectAlbum = (item: unknown) => {
+  emit('selectAlbum', item as string)
+}
 </script>
 
 <style scoped>

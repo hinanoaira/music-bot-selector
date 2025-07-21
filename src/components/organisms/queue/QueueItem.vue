@@ -1,6 +1,6 @@
 <template>
-  <ListItem variant="queue" :current="isCurrent">
-    <AlbumCover :src="coverUrl" :alt="`${title} album cover`" size="small" class="cover-thumb" />
+  <BaseListItem variant="queue" :current="isCurrent">
+    <BaseImage :src="coverUrl" :alt="`${title} album cover`" size="small" class="cover-thumb" />
 
     <div class="info">
       <BaseText tag="div" variant="body" class="title">
@@ -9,14 +9,14 @@
       </BaseText>
       <BaseText tag="div" variant="caption" class="meta"> {{ artist }} / {{ album }} </BaseText>
     </div>
-  </ListItem>
+  </BaseListItem>
 </template>
 
 <script lang="ts" setup>
-import AlbumCover from '@/components/atoms/AlbumCover.vue'
+import BaseImage from '@/components/atoms/BaseImage.vue'
 import BaseText from '@/components/atoms/BaseText.vue'
 import BaseIcon from '@/components/atoms/BaseIcon.vue'
-import ListItem from '@/components/molecules/ListItem.vue'
+import BaseListItem from '@/components/atoms/BaseListItem.vue'
 
 interface Props {
   title: string

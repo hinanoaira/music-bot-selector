@@ -29,31 +29,38 @@ src/
 │   ├── MusicRequestView.vue
 │   └── QueueView.vue
 ├── components/              # View層（コンポーネント）
-│   ├── atoms/               # 最小単位のコンポーネント
-│   │   ├── AlbumCover.vue
+│   ├── atoms/               # 最小単位の汎用UIコンポーネント
 │   │   ├── BaseButton.vue
 │   │   ├── BaseIcon.vue
+│   │   ├── BaseImage.vue     # 汎用画像コンポーネント
 │   │   ├── BaseInput.vue
 │   │   ├── BaseList.vue
 │   │   ├── BaseText.vue
+│   │   ├── ListItem.vue      # 汎用リストアイテム
 │   │   └── ProgressBar.vue
-│   ├── molecules/           # atomsを組み合わせたコンポーネント
-│   │   ├── AlbumItem.vue
-│   │   ├── ListItem.vue
-│   │   ├── PlaybackInfo.vue
-│   │   ├── QueueControls.vue
-│   │   ├── QueueHeader.vue
-│   │   ├── QueueItem.vue
-│   │   ├── ToastItem.vue
-│   │   ├── TrackHeader.vue
-│   │   ├── TrackItem.vue
-│   │   └── YouTubeInput.vue
-│   ├── organisms/           # moleculesを組み合わせた複合コンポーネント
-│   │   ├── AlbumList.vue
-│   │   ├── ArtistList.vue
-│   │   ├── QueueBody.vue
-│   │   ├── ToastList.vue
-│   │   └── TrackList.vue
+│   ├── molecules/           # ドメイン知識なしの汎用組み合わせコンポーネント
+│   │   └── ToastItem.vue     # 汎用通知アイテム
+│   ├── organisms/           # ドメイン知識を含む特化コンポーネント（グループ化）
+│   │   ├── album/           # アルバム関連
+│   │   │   ├── AlbumCover.vue
+│   │   │   ├── AlbumItem.vue
+│   │   │   └── index.ts
+│   │   ├── track/           # トラック関連
+│   │   │   ├── TrackHeader.vue
+│   │   │   ├── TrackItem.vue
+│   │   │   ├── YouTubeInput.vue
+│   │   │   └── index.ts
+│   │   ├── queue/           # キュー関連
+│   │   │   ├── QueueHeader.vue
+│   │   │   ├── QueueItem.vue
+│   │   │   ├── QueueControls.vue
+│   │   │   ├── PlaybackInfo.vue
+│   │   │   └── index.ts
+│   │   ├── AlbumList.vue    # アルバムリスト全体
+│   │   ├── ArtistList.vue   # アーティストリスト全体
+│   │   ├── TrackList.vue    # トラックリスト全体
+│   │   ├── QueueBody.vue    # キュー本体
+│   │   └── ToastList.vue    # 通知リスト全体
 │   └── templates/           # ページレベルのレイアウトコンポーネント
 │       ├── MusicBrowser.vue   # 音楽ブラウザーレイアウト
 │       ├── QueuePanel.vue     # キュー表示・操作パネル
@@ -89,10 +96,16 @@ src/
 ### **View層（Atomic Design）**
 
 - **Templates**: ページレベルのレイアウトコンポーネント
-- **Organisms**: 複合的な機能を持つコンポーネント群
-- **Molecules**: 複数のatomsを組み合わせた意味のある単位
-- **Atoms**: 最小単位の再利用可能なUIコンポーネント
+- **Organisms**: ドメイン知識を含む特定用途のコンポーネント群（音楽プレイヤー特化、関連機能でグループ化）
+- **Molecules**: ドメイン知識のない汎用的な組み合わせコンポーネント
+- **Atoms**: 最小単位の汎用再利用可能UIコンポーネント（ListItemを含む）
 - **Views**: ページコンポーネント
+
+#### **Atomic Design 原則**
+
+- **Atoms**: 部品の最小単位（`BaseButton`, `BaseInput`, `ListItem` など）
+- **Molecules**: ドメイン知識が入っていない、汎用的に使えるもの（`ToastItem`）
+- **Organisms**: ドメイン知識が入っている、つまり特定の場面でしか使えないもの（音楽関連の全コンポーネント、関連機能でディレクトリ分け）
 
 ## 📋 主要機能
 

@@ -9,7 +9,7 @@
 
 <script lang="ts" setup>
 import BaseText from '@/components/atoms/BaseText.vue'
-import ProgressBar from '@/components/atoms/ProgressBar.vue'
+import ProgressBar from '@/components/atoms/BaseProgressBar.vue'
 
 interface Props {
   formattedCurrentTime: string
