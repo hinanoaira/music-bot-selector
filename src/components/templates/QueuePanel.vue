@@ -3,28 +3,28 @@
     <QueueHeader @toggle="$emit('toggle')" />
 
     <transition name="slide-up">
-      <QueueBody
-        v-if="isOpen"
-        :queue-items="queueItems"
-        :pending-track-count="pendingTrackCount"
-        :playback-status="playbackStatus"
-        :formatted-current-time="formattedCurrentTime"
-        :formatted-total-time="formattedTotalTime"
-        :playback-progress="playbackProgress"
-        :get-cover-url="getCoverUrl"
-        @skip="$emit('skip')"
-      />
+      <div v-if="isOpen" class="queue-body">
+        <PlaybackInfo v-if="playbackStatus" :formatted-current-time="formattedCurrentTime"
+          :formatted-total-time="formattedTotalTime" :progress="playbackProgress" />
+
+        <BaseList class="queue-list">
+          <QueueControls :pending-count="pendingTrackCount" :disabled="queueItems.length === 0" @skip="$emit('skip')" />
+
+          <QueueItem v-for="(item, index) in queueItems" :key="index" :title="item.title" :artist="item.artist"
+            :album="item.album" :cover-url="getCoverUrl(item.albumArtist, item.album)" :is-current="item.isCurrent" />
+        </BaseList>
+      </div>
     </transition>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { QueueHeader } from '@/components/organisms/queue'
-import QueueBody from '@/components/organisms/QueueBody.vue'
-import type { QueueItem, PlaybackStatus } from '@/models/types/music-types'
+import { QueueHeader, PlaybackInfo, QueueControls, QueueItem } from '@/components/organisms/queue'
+import BaseList from '@/components/atoms/BaseList.vue'
+import type { QueueItem as QueueItemType, PlaybackStatus } from '@/models/types/music-types'
 
 interface Props {
-  queueItems: QueueItem[]
+  queueItems: QueueItemType[]
   isOpen: boolean
   pendingTrackCount: number
   playbackStatus: PlaybackStatus | null
@@ -49,6 +49,12 @@ defineEmits<{
   border-radius: 8px 8px 0 0;
   background-color: #fff;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.queue-body {
+  padding: 8px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .slide-up-enter-active,
