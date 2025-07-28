@@ -4,121 +4,92 @@ import type { QueueItem, PlaybackStatus } from './types/music-types'
 
 /**
  * キュー管理のビジネスロジックを担当するModel
- * QueueViewModelに対応
+ * 純粋なビジネスロジックのみを担当
  */
 export class QueueModel {
-  private static instance: QueueModel
   private queueService: QueueService
   private musicService: MusicService
 
-  private constructor() {
-    this.queueService = QueueService.getInstance()
-    this.musicService = MusicService.getInstance()
-  }
-
-  static getInstance(): QueueModel {
-    if (!QueueModel.instance) {
-      QueueModel.instance = new QueueModel()
-    }
-    return QueueModel.instance
+  constructor() {
+    this.queueService = new QueueService()
+    this.musicService = new MusicService()
   }
 
   /**
    * WebSocket接続を開始
    */
-  connect(guildId: string): void {
+  connectWebSocket(guildId: string): void {
     this.queueService.connect(guildId)
   }
 
   /**
    * WebSocket接続を切断
    */
-  disconnect(): void {
+  disconnectWebSocket(): void {
     this.queueService.disconnect()
   }
 
   /**
-   * WebSocket接続状態を取得
+   * キューリスナーを追加
    */
-  isConnected(): boolean {
-    return true
+  addQueueListener(handler: (items: QueueItem[]) => void): void {
+    this.queueService.addQueueListener(handler)
   }
 
   /**
-   * トラックスキップを実行
+   * キューリスナーを削除
+   */
+  removeQueueListener(handler: (items: QueueItem[]) => void): void {
+    this.queueService.removeQueueListener(handler)
+  }
+
+  /**
+   * 再生状態リスナーを追加
+   */
+  addPlaybackStatusListener(handler: (status: PlaybackStatus) => void): void {
+    this.queueService.addPlaybackStatusListener(handler)
+  }
+
+  /**
+   * 再生状態リスナーを削除
+   */
+  removePlaybackStatusListener(handler: (status: PlaybackStatus) => void): void {
+    this.queueService.removePlaybackStatusListener(handler)
+  }
+
+  /**
+   * 現在の曲をスキップ
    */
   async skipTrack(guildId: string): Promise<boolean> {
     return await this.musicService.skipTrack(guildId)
   }
 
   /**
-   * キューアイテムの分析・計算
+   * キューが空かどうかを判定
    */
-  analyzeQueue(queueItems: QueueItem[]): {
-    currentTrack: QueueItem | null
-    pendingTracks: QueueItem[]
-    totalTracks: number
-    totalDuration: number
-  } {
-    const currentTrack = queueItems.find((item) => item.isCurrent) || null
-    const pendingTracks = queueItems.filter((item) => !item.isCurrent)
-    const totalTracks = queueItems.length
-    const totalDuration = queueItems.reduce((sum, item) => sum + (item.duration || 0), 0)
-
-    return {
-      currentTrack,
-      pendingTracks,
-      totalTracks,
-      totalDuration,
-    }
+  isQueueEmpty(queueItems: QueueItem[]): boolean {
+    return queueItems.length === 0
   }
 
   /**
-   * 再生時間のフォーマット（業務ロジック）
+   * 現在のトラックを取得
    */
-  formatTime(seconds: number): string {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = Math.floor(seconds % 60)
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  getCurrentTrack(queueItems: QueueItem[]): QueueItem | null {
+    return queueItems.find((item) => item.isCurrent) || null
   }
 
   /**
-   * 再生進捗の計算（業務ロジック）
+   * 現在のトラック数を計算
    */
-  calculateProgress(currentTime: number, totalTime: number): number {
-    if (totalTime === 0) return 0
-    return Math.min(100, Math.max(0, (currentTime / totalTime) * 100))
+  getCurrentTrackCount(queueItems: QueueItem[]): number {
+    return queueItems.filter((item) => item.isCurrent).length
   }
 
   /**
-   * キューの状態バリデーション
+   * 待機中のトラック数を計算
    */
-  validateQueueState(queueItems: QueueItem[]): {
-    isValid: boolean
-    hasCurrentTrack: boolean
-    hasMultipleCurrentTracks: boolean
-  } {
-    const currentTracks = queueItems.filter((item) => item.isCurrent)
-
-    return {
-      isValid: currentTracks.length <= 1,
-      hasCurrentTrack: currentTracks.length === 1,
-      hasMultipleCurrentTracks: currentTracks.length > 1,
-    }
-  }
-
-  /**
-   * イベントリスナーの登録（WebSocketイベント）
-   */
-  onQueueUpdate(callback: (queueItems: QueueItem[]) => void): void {
-    this.queueService.addQueueListener(callback)
-  }
-
-  /**
-   * 再生状態更新イベントの登録
-   */
-  onPlaybackUpdate(callback: (status: PlaybackStatus) => void): void {
-    this.queueService.addPlaybackStatusListener(callback)
+  getPendingTrackCount(queueItems: QueueItem[]): number {
+    return queueItems.filter((item) => !item.isCurrent).length
   }
 
   /**
@@ -129,23 +100,19 @@ export class QueueModel {
   }
 
   /**
-   * キューが空かどうかの判定
+   * 再生時間のフォーマット
    */
-  isQueueEmpty(queueItems: QueueItem[]): boolean {
-    return queueItems.length === 0
+  formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.floor(seconds % 60)
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
   /**
-   * スキップ可能かどうかの判定
+   * 再生進捗の計算
    */
-  canSkip(queueItems: QueueItem[]): boolean {
-    return !this.isQueueEmpty(queueItems)
-  }
-
-  /**
-   * 接続状態変更イベントの登録
-   */
-  onConnectionChange(callback: (isConnected: boolean) => void): void {
-    console.log('Connection change listener registered:', callback)
+  calculateProgress(currentTime: number, totalTime: number): number {
+    if (totalTime === 0) return 0
+    return Math.min((currentTime / totalTime) * 100, 100)
   }
 }

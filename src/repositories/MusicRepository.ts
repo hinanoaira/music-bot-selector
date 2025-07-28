@@ -11,15 +11,6 @@ import type {
  * 音楽データアクセス層
  */
 export class MusicRepository {
-  private static instance: MusicRepository
-
-  static getInstance(): MusicRepository {
-    if (!MusicRepository.instance) {
-      MusicRepository.instance = new MusicRepository()
-    }
-    return MusicRepository.instance
-  }
-
   async getArtists(): Promise<Artist[]> {
     try {
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ARTIST}`)

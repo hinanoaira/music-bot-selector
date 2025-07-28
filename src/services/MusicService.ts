@@ -11,18 +11,10 @@ import type {
  * 音楽ビジネスロジック層
  */
 export class MusicService {
-  private static instance: MusicService
   private musicRepository: MusicRepository
 
-  private constructor() {
-    this.musicRepository = MusicRepository.getInstance()
-  }
-
-  static getInstance(): MusicService {
-    if (!MusicService.instance) {
-      MusicService.instance = new MusicService()
-    }
-    return MusicService.instance
+  constructor() {
+    this.musicRepository = new MusicRepository()
   }
 
   /**
