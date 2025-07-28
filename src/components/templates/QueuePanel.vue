@@ -4,14 +4,29 @@
 
     <transition name="slide-up">
       <div v-if="isOpen" class="queue-body">
-        <PlaybackInfo v-if="playbackStatus" :formatted-current-time="formattedCurrentTime"
-          :formatted-total-time="formattedTotalTime" :progress="playbackProgress" />
+        <PlaybackInfo
+          v-if="playbackStatus"
+          :formatted-current-time="formattedCurrentTime"
+          :formatted-total-time="formattedTotalTime"
+          :progress="playbackProgress"
+        />
 
         <BaseList class="queue-list">
-          <QueueControls :pending-count="pendingTrackCount" :disabled="queueItems.length === 0" @skip="$emit('skip')" />
+          <QueueControls
+            :pending-count="pendingTrackCount"
+            :disabled="queueItems.length === 0"
+            @skip="$emit('skip')"
+          />
 
-          <QueueItem v-for="(item, index) in queueItems" :key="index" :title="item.title" :artist="item.artist"
-            :album="item.album" :cover-url="getCoverUrl(item.albumArtist, item.album)" :is-current="item.isCurrent" />
+          <QueueItem
+            v-for="(item, index) in queueItems"
+            :key="index"
+            :title="item.title"
+            :artist="item.artist"
+            :album="item.album"
+            :cover-url="getCoverUrl(item.albumArtist, item.album)"
+            :is-current="item.isCurrent"
+          />
         </BaseList>
       </div>
     </transition>

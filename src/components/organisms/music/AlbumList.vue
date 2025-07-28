@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import NavigableList from '@/components/organisms/NavigableList.vue'
+import NavigableList from './NavigableList.vue'
 import ContentCard from '@/components/molecules/ContentCard.vue'
 
 interface Props {

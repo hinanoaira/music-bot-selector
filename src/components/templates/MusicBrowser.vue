@@ -41,9 +41,7 @@
 
 <script lang="ts" setup>
 import BaseText from '@/components/atoms/BaseText.vue'
-import ArtistList from '@/components/organisms/ArtistList.vue'
-import AlbumList from '@/components/organisms/AlbumList.vue'
-import TrackList from '@/components/organisms/TrackList.vue'
+import { ArtistList, AlbumList, TrackList } from '@/components/organisms/music'
 
 interface Props {
   artists: string[]
