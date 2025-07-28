@@ -12,25 +12,16 @@
 
     <QueueView />
 
-    <ToastContainer />
+    <ToastView />
   </div>
 </template>
 
 <script lang="ts" setup>
 import QueueView from '@/views/QueueView.vue'
-import ToastContainer from '@/components/templates/ToastContainer.vue'
+import ToastView from '@/views/ToastView.vue'
 </script>
 
 <style scoped>
-html,
-body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: sans-serif;
-  background-color: #f8f8f8;
-}
-
 #app {
   width: 100%;
   height: 100%;
@@ -76,5 +67,16 @@ body {
 
 .queue-panel {
   z-index: 20;
+}
+</style>
+
+<style>
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: sans-serif;
+  background-color: #f8f8f8;
 }
 </style>

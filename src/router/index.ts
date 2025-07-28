@@ -21,14 +21,12 @@ const router = createRouter({
       component: MusicRequestView,
       props: true,
     },
+    {
+      path: '/queue',
+      name: 'Queue',
+      component: () => import('@/views/QueueView.vue'),
+    },
   ],
-  scrollBehavior(to, from, savedPosition) {
-    // スクロール位置の復元
-    if (savedPosition) {
-      return savedPosition
-    }
-    return { top: 0 }
-  },
 })
 
 export default router
