@@ -213,10 +213,12 @@ export class MusicRequestViewModel {
   /**
    * アルバム選択のリセット（アーティスト選択は保持）
    */
-  public resetAlbumSelection(): void {
-    if (this.selectedArtist.value) {
-      this.resetSelection()
-      this.selectArtist(this.selectedArtist.value)
+  public async resetAlbumSelection(): Promise<void> {
+    const currentArtist = this.selectedArtist.value
+    if (currentArtist) {
+      this._selectedAlbum.value = null
+      this._tracks.value = []
+      await this.selectArtist(currentArtist)
     }
   }
 }
