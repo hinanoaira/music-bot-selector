@@ -1,65 +1,103 @@
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
-
-export interface ToastMessage {
-  id: string
-  message: string
-  type: 'success' | 'error' | 'warning' | 'info'
-  duration?: number
-}
+import { ref } from 'vue'
+import { CollectionUtils } from '@/utils/collection.utils'
+import type { ToastMessage } from '@/models/types/toast-types'
 
 export const useToastStore = defineStore('toast', () => {
-  const toasts = ref<ToastMessage[]>([])
+  const toastMessages = ref<ToastMessage[]>([])
+  const timers = new Map<string, number>()
 
-  function showToast(message: string, type: ToastMessage['type'] = 'info', duration = 5000) {
-    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
-    const toast: ToastMessage = {
-      id,
-      message,
+  const createToast = (type: ToastMessage['type'], message: string): ToastMessage => {
+    return {
+      id: crypto.randomUUID(),
       type,
-      duration,
-    }
-
-    toasts.value.push(toast)
-
-    // 自動削除
-    if (duration > 0) {
-      setTimeout(() => {
-        removeToast(id)
-      }, duration)
+      message,
+      timestamp: Date.now(),
     }
   }
 
-  function removeToast(id: string) {
-    const index = toasts.value.findIndex((toast) => toast.id === id)
-    if (index > -1) {
-      toasts.value.splice(index, 1)
+  const addToast = (type: ToastMessage['type'], message: string) => {
+    const toast = createToast(type, message)
+    toastMessages.value.push(toast)
+
+    const timerId = window.setTimeout(() => {
+      removeToast(toast.id)
+    }, 5000)
+
+    timers.set(toast.id, timerId)
+  }
+
+  const removeToast = (id: string) => {
+    const toast = CollectionUtils.findFirst(toastMessages.value, (t) => t.id === id)
+    if (toast) {
+      const index = toastMessages.value.indexOf(toast)
+      toastMessages.value.splice(index, 1)
+
+      const timerId = timers.get(id)
+      if (timerId) {
+        clearTimeout(timerId)
+        timers.delete(id)
+      }
     }
   }
 
-  function showSuccess(message: string, duration?: number) {
-    showToast(message, 'success', duration)
+  const clearAllToasts = () => {
+    timers.forEach((timerId) => clearTimeout(timerId))
+    timers.clear()
+    toastMessages.value.length = 0
   }
 
-  function showError(message: string, duration?: number) {
-    showToast(message, 'error', duration)
+  const showSuccessToast = (message: string) => {
+    addToast('success', message)
   }
 
-  function showWarning(message: string, duration?: number) {
-    showToast(message, 'warning', duration)
+  const showErrorToast = (message: string) => {
+    addToast('error', message)
   }
 
-  function showInfo(message: string, duration?: number) {
-    showToast(message, 'info', duration)
+  const showWarningToast = (message: string) => {
+    addToast('warning', message)
+  }
+
+  const showInfoToast = (message: string) => {
+    addToast('info', message)
+  }
+
+  /**
+   * トーストタイプに応じたアイコンタイプを取得
+   */
+  const getIconType = (
+    type: ToastMessage['type'],
+  ): 'success' | 'error' | 'warning' | 'info' | 'music' | 'close' => {
+    const iconMap: Record<
+      ToastMessage['type'],
+      'success' | 'error' | 'warning' | 'info' | 'music' | 'close'
+    > = {
+      success: 'success',
+      error: 'error',
+      warning: 'warning',
+      info: 'info',
+    }
+    return iconMap[type]
+  }
+
+  /**
+   * トーストメッセージのバリデーション
+   */
+  const validateToast = (toast: ToastMessage): boolean => {
+    return !!(toast.id && toast.message && toast.type && typeof toast.timestamp === 'number')
   }
 
   return {
-    toasts,
-    showToast,
+    toastMessages,
+    addToast,
     removeToast,
-    showSuccess,
-    showError,
-    showWarning,
-    showInfo,
+    clearAllToasts,
+    showSuccessToast,
+    showErrorToast,
+    showWarningToast,
+    showInfoToast,
+    getIconType,
+    validateToast,
   }
 })
