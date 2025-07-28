@@ -5,18 +5,10 @@ import type { QueueItem, WebSocketMessage, PlaybackStatus } from '../models/type
  * キューサービス - WebSocket通信とキュー管理
  */
 export class QueueService {
-  private static instance: QueueService
   private ws: WebSocket | null = null
   private pingInterval: number | null = null
   private listeners: Set<(queue: QueueItem[]) => void> = new Set()
   private playbackStatusListeners: Set<(status: PlaybackStatus) => void> = new Set()
-
-  static getInstance(): QueueService {
-    if (!QueueService.instance) {
-      QueueService.instance = new QueueService()
-    }
-    return QueueService.instance
-  }
 
   /**
    * WebSocket接続を開始

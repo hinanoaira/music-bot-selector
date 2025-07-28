@@ -1,29 +1,15 @@
 import { MusicService } from '@/services/MusicService'
-import type {
-  Artist,
-  Album,
-  Track,
-  TrackRequestParams,
-  YoutubeRequestParams,
-} from './types/music-types'
+import type { Artist, Album, Track } from './types/music-types'
 
 /**
  * 音楽リクエストのビジネスロジックを担当するModel
- * MusicRequestViewModelに対応
+ * MusicRequestView専用の状態管理とビジネスロジック
  */
 export class MusicRequestModel {
-  private static instance: MusicRequestModel
   private musicService: MusicService
 
-  private constructor() {
-    this.musicService = MusicService.getInstance()
-  }
-
-  static getInstance(): MusicRequestModel {
-    if (!MusicRequestModel.instance) {
-      MusicRequestModel.instance = new MusicRequestModel()
-    }
-    return MusicRequestModel.instance
+  constructor() {
+    this.musicService = new MusicService()
   }
 
   /**
@@ -43,10 +29,51 @@ export class MusicRequestModel {
   }
 
   /**
-   * キューが空かどうかの判定ロジック
+   * 選択状態のバリデーション
    */
-  isQueueEmpty(queueLength: number): boolean {
-    return queueLength === 0
+  validateTrackRequest(
+    artist: Artist | null,
+    album: Album | null,
+    track: Track | null,
+    guildId: string,
+  ): boolean {
+    return !!(artist && album && track && guildId)
+  }
+
+  /**
+   * YouTubeリクエストのバリデーション
+   */
+  validateYoutubeRequest(url: string, guildId: string): boolean {
+    const urlRegex = /^https?:\/\/.+/
+    return !!(url && guildId && urlRegex.test(url))
+  }
+
+  /**
+   * アーティスト名の正規化
+   */
+  normalizeArtistName(artist: Artist): string {
+    return artist.trim().toLowerCase()
+  }
+
+  /**
+   * リクエスト可能かどうかの総合判定
+   */
+  canMakeRequest(
+    artist: Artist | null,
+    album: Album | null,
+    track: Track | null,
+    guildId: string,
+    isRequesting: boolean,
+  ): boolean {
+    return this.validateTrackRequest(artist, album, track, guildId) && !isRequesting
+  }
+
+  /**
+   * YouTube URL かどうかの判定
+   */
+  isYoutubeUrl(url: string): boolean {
+    const youtubeRegex = /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/.+/
+    return youtubeRegex.test(url)
   }
 
   /**
@@ -71,16 +98,27 @@ export class MusicRequestModel {
   }
 
   /**
-   * 通常のトラックリクエストを実行
+   * トラックリクエストを実行
    */
-  async requestTrack(params: TrackRequestParams): Promise<boolean> {
+  async requestTrack(params: {
+    artist: Artist
+    album: Album
+    track: Track
+    guildId: string
+  }): Promise<boolean> {
+    if (!this.validateTrackRequest(params.artist, params.album, params.track, params.guildId)) {
+      throw new Error('トラックリクエストのバリデーションに失敗しました')
+    }
     return await this.musicService.requestTrack(params)
   }
 
   /**
-   * YouTubeトラックリクエストを実行
+   * YouTubeリクエストを実行
    */
-  async requestYoutubeTrack(params: YoutubeRequestParams): Promise<boolean> {
+  async requestYoutubeTrack(params: { url: string; guildId: string }): Promise<boolean> {
+    if (!this.validateYoutubeRequest(params.url, params.guildId)) {
+      throw new Error('YouTube URLのバリデーションに失敗しました')
+    }
     return await this.musicService.requestYoutubeTrack(params)
   }
 
@@ -89,40 +127,5 @@ export class MusicRequestModel {
    */
   getAlbumCoverUrl(artist: Artist, album: Album): string {
     return this.musicService.getAlbumCoverUrl(artist, album)
-  }
-
-  /**
-   * アーティスト選択時の業務ロジック
-   * （例：選択状態のリセット、関連データの取得など）
-   */
-  async selectArtist(artist: Artist): Promise<Album[]> {
-    return await this.getAlbums(artist)
-  }
-
-  /**
-   * アルバム選択時の業務ロジック
-   */
-  async selectAlbum(artist: Artist, album: Album): Promise<Track[]> {
-    return await this.getTracks(artist, album)
-  }
-
-  /**
-   * 選択状態のバリデーション
-   */
-  validateTrackRequest(
-    artist: Artist | null,
-    album: Album | null,
-    track: Track | null,
-    guildId: string,
-  ): boolean {
-    return !!(artist && album && track && guildId)
-  }
-
-  /**
-   * YouTubeリクエストのバリデーション
-   */
-  validateYoutubeRequest(url: string, guildId: string): boolean {
-    const urlRegex = /^https?:\/\/.+/
-    return !!(url && guildId && urlRegex.test(url))
   }
 }
