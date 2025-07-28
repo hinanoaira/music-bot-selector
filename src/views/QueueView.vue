@@ -18,60 +18,50 @@
 <script lang="ts" setup>
 import { onMounted, onUnmounted } from 'vue'
 import { QueueViewModel } from '@/viewmodels/QueueViewModel'
-import { MusicService } from '@/services/MusicService'
-import { useToastStore } from '@/stores/toast.store'
 import { getGuildIdFromUrl } from '@/utils/url-params'
 import QueuePanel from '@/components/templates/QueuePanel.vue'
 
 const guildId = getGuildIdFromUrl()
-const { showSuccess, showError } = useToastStore()
 
-const queueViewModel = new QueueViewModel()
-const musicService = MusicService.getInstance()
-
-queueViewModel.addEventListener('skipSuccess', showSuccess)
-queueViewModel.addEventListener('skipError', showError)
+const viewModel = new QueueViewModel()
 
 const toggleQueue = () => {
-  queueViewModel.togglePanel()
+  viewModel.toggleQueuePanel()
 }
 
 const skipTrack = async () => {
   if (guildId) {
-    await queueViewModel.skipCurrentTrack(guildId)
+    await viewModel.skipCurrentTrack(guildId)
   }
 }
 
-const getAlbumCoverUrl = (albumArtist: string, album: string): string => {
-  return musicService.getAlbumCoverUrl(albumArtist, album)
+const getAlbumCoverUrl = (albumArtist: string, album: string) => {
+  return viewModel.getQueueAlbumCoverUrl(albumArtist, album)
 }
 
-const queueItems = queueViewModel.queueItems
-const isQueueOpen = queueViewModel.isOpen
-const pendingTrackCount = queueViewModel.pendingTrackCount
-const playbackStatus = queueViewModel.playbackStatus
-const formattedCurrentTime = queueViewModel.formattedCurrentTime
-const formattedTotalTime = queueViewModel.formattedTotalTime
-const playbackProgress = queueViewModel.playbackProgress
+const queueItems = viewModel.queueItems
+const isQueueOpen = viewModel.isQueueOpen
+const pendingTrackCount = viewModel.pendingTrackCount
+const playbackStatus = viewModel.playbackStatus
+const formattedCurrentTime = viewModel.formattedCurrentTime
+const formattedTotalTime = viewModel.formattedTotalTime
+const playbackProgress = viewModel.playbackProgress
 
-onMounted(() => {
+onMounted(async () => {
   if (guildId) {
-    queueViewModel.connect(guildId)
+    await viewModel.connect(guildId)
   }
 })
 
 onUnmounted(() => {
-  queueViewModel.disconnect()
-  queueViewModel.removeEventListener('skipSuccess', showSuccess)
-  queueViewModel.removeEventListener('skipError', showError)
+  viewModel.disconnect()
 })
 </script>
 
 <style scoped>
 .queue-view {
-  position: fixed;
-  right: 16px;
-  bottom: 0;
-  z-index: 30;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 </style>

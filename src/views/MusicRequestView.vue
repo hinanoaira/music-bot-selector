@@ -20,22 +20,17 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { MusicRequestViewModel } from '@/viewmodels/MusicRequestViewModel'
-import { useToastStore } from '@/stores/toast.store'
 import { getGuildIdFromUrl } from '@/utils/url-params'
 import MusicBrowser from '@/components/templates/MusicBrowser.vue'
 
 const router = useRouter()
 const route = useRoute()
 const guildId = getGuildIdFromUrl()
-const { showSuccess, showError } = useToastStore()
 
 const viewModel = new MusicRequestViewModel()
-
-viewModel.addEventListener('requestSuccess', showSuccess)
-viewModel.addEventListener('requestError', showError)
 
 watch(
   () => [route.params.artist, route.params.album],
@@ -77,11 +72,15 @@ const selectAlbum = async (album: string) => {
 }
 
 const requestTrack = async (track: string) => {
-  await viewModel.requestTrack(track, guildId)
+  if (guildId) {
+    await viewModel.requestTrack(track, guildId)
+  }
 }
 
 const requestYoutubeTrack = async (url: string) => {
-  await viewModel.requestYoutubeTrack(url, guildId)
+  if (guildId) {
+    await viewModel.requestYoutube(url, guildId)
+  }
 }
 
 const artists = viewModel.artists
@@ -99,14 +98,11 @@ const updateIsMobile = () => {
 }
 
 onMounted(() => {
-  viewModel.initialize()
   window.addEventListener('resize', updateIsMobile)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateIsMobile)
-  viewModel.removeEventListener('requestSuccess', showSuccess)
-  viewModel.removeEventListener('requestError', showError)
 })
 </script>
 
