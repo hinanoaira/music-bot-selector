@@ -1,186 +1,157 @@
 import { ref, computed } from 'vue'
 import { QueueModel } from '@/models/QueueModel'
+import { useToastStore } from '@/stores/toast.store'
 import type { QueueItem, PlaybackStatus } from '@/models/types/music-types'
 
 /**
- * キュー管理のViewModel
+ * キュー画面のViewModel
+ * キューの表示制御、UI ロジックを担当
  */
 export class QueueViewModel {
-  private queueModel: QueueModel
+  private queueModel = new QueueModel()
+  private toastStore = useToastStore()
 
-  public readonly queueItems = ref<QueueItem[]>([])
-  public readonly isOpen = ref(false)
-  public readonly isSkipping = ref(false)
-  public readonly skipError = ref<string | null>(null)
-  public readonly currentTrackCount = ref(0)
-  public readonly isConnected = ref(false)
-  public readonly playbackStatus = ref<PlaybackStatus | null>(null)
+  private _queueItems = ref<QueueItem[]>([])
+  private _isQueueOpen = ref(false)
+  private _isSkipping = ref(false)
+  private _skipError = ref<string | null>(null)
+  private _isConnected = ref(false)
+  private _playbackStatus = ref<PlaybackStatus | null>(null)
 
-  private eventListeners: {
-    skipSuccess: Array<(message: string) => void>
-    skipError: Array<(message: string) => void>
-  } = {
-    skipSuccess: [],
-    skipError: [],
+  private queueUpdateHandler = (items: QueueItem[]) => {
+    this._queueItems.value = items
   }
 
-  public readonly currentTrack = computed(
-    () => this.queueItems.value.find((item) => item.isCurrent) || null,
-  )
-
-  public readonly pendingTrackCount = computed(
-    () => this.queueItems.value.filter((item) => !item.isCurrent).length,
-  )
-
-  public readonly isEmpty = computed(() => this.queueItems.value.length === 0)
-
-  public readonly formattedCurrentTime = computed(() => {
-    if (!this.playbackStatus.value) return '0:00'
-    return this.queueModel.formatTime(this.playbackStatus.value.currentTime)
-  })
-
-  public readonly formattedTotalTime = computed(() => {
-    if (!this.playbackStatus.value) return '0:00'
-    return this.queueModel.formatTime(this.playbackStatus.value.totalTime)
-  })
-
-  public readonly playbackProgress = computed(() => {
-    if (!this.playbackStatus.value || this.playbackStatus.value.totalTime === 0) return 0
-    return (this.playbackStatus.value.currentTime / this.playbackStatus.value.totalTime) * 100
-  })
-
-  public onSkipSuccess: ((message: string) => void) | null = null
-  public onSkipError: ((message: string) => void) | null = null
+  private playbackStatusHandler = (status: PlaybackStatus) => {
+    this._playbackStatus.value = status
+  }
 
   constructor() {
-    this.queueModel = QueueModel.getInstance()
-    this.setupQueueListener()
-    this.setupPlaybackStatusListener()
+    this.setupWebSocketHandlers()
+  }
+
+  /** キューアイテム一覧 */
+  public readonly queueItems = computed(() => this._queueItems.value)
+
+  /** キューパネルが開いているかどうか */
+  public readonly isQueueOpen = computed(() => this._isQueueOpen.value)
+
+  /** スキップ処理中かどうか */
+  public readonly isSkipping = computed(() => this._isSkipping.value)
+
+  /** スキップエラー */
+  public readonly skipError = computed(() => this._skipError.value)
+
+  /** WebSocket接続状態 */
+  public readonly isConnected = computed(() => this._isConnected.value)
+
+  /** 再生状態 */
+  public readonly playbackStatus = computed(() => this._playbackStatus.value)
+
+  /** 現在再生中のトラック */
+  public readonly currentTrack = computed(() =>
+    this.queueModel.getCurrentTrack(this._queueItems.value),
+  )
+
+  /** 現在のトラック数 */
+  public readonly currentTrackCount = computed(() =>
+    this.queueModel.getCurrentTrackCount(this._queueItems.value),
+  )
+
+  /** 待機中のトラック数 */
+  public readonly pendingTrackCount = computed(() =>
+    this.queueModel.getPendingTrackCount(this._queueItems.value),
+  )
+
+  /** キューが空かどうか */
+  public readonly isEmpty = computed(() => this.queueModel.isQueueEmpty(this._queueItems.value))
+
+  /** フォーマット済み現在時間 */
+  public readonly formattedCurrentTime = computed(() => {
+    if (!this._playbackStatus.value) return '0:00'
+    return this.queueModel.formatTime(this._playbackStatus.value.currentTime)
+  })
+
+  /** フォーマット済み総時間 */
+  public readonly formattedTotalTime = computed(() => {
+    if (!this._playbackStatus.value) return '0:00'
+    return this.queueModel.formatTime(this._playbackStatus.value.totalTime)
+  })
+
+  /** 再生進捗（パーセンテージ） */
+  public readonly playbackProgress = computed(() => {
+    if (!this._playbackStatus.value) return 0
+    return this.queueModel.calculateProgress(
+      this._playbackStatus.value.currentTime,
+      this._playbackStatus.value.totalTime,
+    )
+  })
+
+  /**
+   * WebSocketイベントハンドラーの設定
+   */
+  private setupWebSocketHandlers(): void {
+    this.queueModel.addQueueListener(this.queueUpdateHandler)
+    this.queueModel.addPlaybackStatusListener(this.playbackStatusHandler)
   }
 
   /**
-   * イベントリスナーを追加
+   * キューサーバーに接続
    */
-  addEventListener<T extends keyof typeof this.eventListeners>(
-    event: T,
-    listener: (typeof this.eventListeners)[T][0],
-  ): void {
-    this.eventListeners[event].push(listener as never)
-  }
-
-  /**
-   * イベントリスナーを削除
-   */
-  removeEventListener<T extends keyof typeof this.eventListeners>(
-    event: T,
-    listener: (typeof this.eventListeners)[T][0],
-  ): void {
-    const index = this.eventListeners[event].indexOf(listener as never)
-    if (index > -1) {
-      this.eventListeners[event].splice(index, 1)
+  public async connect(guildId: string): Promise<void> {
+    try {
+      this.queueModel.connectWebSocket(guildId)
+      this._isConnected.value = true
+    } catch (error) {
+      throw error
     }
   }
 
   /**
-   * イベントを発火
+   * キューサーバーから切断
    */
-  private emit<T extends keyof typeof this.eventListeners>(
-    event: T,
-    ...args: Parameters<(typeof this.eventListeners)[T][0]>
-  ): void {
-    this.eventListeners[event].forEach((listener) => {
-      ;(listener as (...args: unknown[]) => void)(...args)
-    })
+  public disconnect(): void {
+    this.queueModel.disconnectWebSocket()
+    this.queueModel.removeQueueListener(this.queueUpdateHandler)
+    this.queueModel.removePlaybackStatusListener(this.playbackStatusHandler)
+    this._isConnected.value = false
   }
 
   /**
-   * WebSocket接続を開始
+   * キューパネルの表示/非表示を切り替え
    */
-  connect(guildId: string): void {
-    this.queueModel.connect(guildId)
-    this.isConnected.value = true
+  public toggleQueuePanel(): void {
+    this._isQueueOpen.value = !this._isQueueOpen.value
   }
 
   /**
-   * WebSocket接続を切断
+   * 現在の曲をスキップ
    */
-  disconnect(): void {
-    this.queueModel.disconnect()
-    this.isConnected.value = false
-  }
-
-  /**
-   * パネルの開閉を切り替え
-   */
-  togglePanel(): void {
-    this.isOpen.value = !this.isOpen.value
-  }
-
-  /**
-   * 現在のトラックをスキップ
-   */
-  async skipCurrentTrack(guildId: string): Promise<void> {
-    if (!this.queueModel.canSkip(this.queueItems.value)) {
-      this.handleSkipError('スキップできるトラックがありません')
+  public async skipCurrentTrack(guildId: string): Promise<void> {
+    if (this.isEmpty.value) {
+      this.toastStore.showErrorToast('スキップできない状態です')
       return
     }
 
-    this.isSkipping.value = true
-    this.skipError.value = null
-
     try {
+      this._isSkipping.value = true
+      this._skipError.value = null
+
       await this.queueModel.skipTrack(guildId)
-      this.handleSkipSuccess('トラックをスキップしました')
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'スキップに失敗しました'
-      this.handleSkipError(message)
+      const errorMessage = error instanceof Error ? error.message : 'スキップに失敗しました'
+      this._skipError.value = errorMessage
+      this.toastStore.showErrorToast(errorMessage)
+      throw error
     } finally {
-      this.isSkipping.value = false
+      this._isSkipping.value = false
     }
   }
 
   /**
-   * アルバムカバーURLを取得
+   * アルバムカバー画像のURLを取得
    */
-  getAlbumCoverUrl(albumArtist: string, album: string): string {
+  public getQueueAlbumCoverUrl(albumArtist: string, album: string): string {
     return this.queueModel.getAlbumCoverUrl(albumArtist, album)
-  }
-
-  /**
-   * キューリスナーをセットアップ
-   */
-  private setupQueueListener(): void {
-    const listener = (queue: QueueItem[]) => {
-      this.queueItems.value = queue
-      this.currentTrackCount.value = queue.filter((item) => !item.isCurrent).length
-    }
-
-    this.queueModel.onQueueUpdate(listener)
-  }
-
-  /**
-   * 再生状態リスナーをセットアップ
-   */
-  private setupPlaybackStatusListener(): void {
-    const listener = (status: PlaybackStatus) => {
-      this.playbackStatus.value = status
-    }
-
-    this.queueModel.onPlaybackUpdate(listener)
-  }
-
-  /**
-   * スキップ成功時の処理
-   */
-  private handleSkipSuccess(message: string): void {
-    this.emit('skipSuccess', message)
-  }
-
-  /**
-   * スキップエラー時の処理
-   */
-  private handleSkipError(message: string): void {
-    this.skipError.value = message
-    this.emit('skipError', message)
   }
 }
