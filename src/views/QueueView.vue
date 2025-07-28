@@ -1,6 +1,7 @@
 <template>
-  <div v-if="guildId" class="queue-view">
+  <div class="queue-view">
     <QueuePanel
+      v-if="guildId"
       :queue-items="queueItems"
       :is-open="isQueueOpen"
       :pending-track-count="pendingTrackCount"
@@ -60,8 +61,9 @@ onUnmounted(() => {
 
 <style scoped>
 .queue-view {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  bottom: 0;
+  right: 20px;
+  z-index: 1000;
 }
 </style>

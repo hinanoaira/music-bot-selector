@@ -1,10 +1,21 @@
 <template>
   <div class="music-request-page">
-    <MusicBrowser :artists="artists" :albums="albums" :tracks="tracks" :selected-artist="selectedArtist"
-      :selected-album="selectedAlbum" :guild-id="guildId" :is-requesting-youtube="isRequestingYoutube"
-      :get-album-cover-url="getAlbumCoverUrl" :is-mobile="isMobile" @select-artist="selectArtist"
-      @select-album="selectAlbum" @request-track="requestTrack" @request-youtube-track="requestYoutubeTrack"
-      @back="router.back()" />
+    <MusicBrowser
+      :artists="artists"
+      :albums="albums"
+      :tracks="tracks"
+      :selected-artist="selectedArtist"
+      :selected-album="selectedAlbum"
+      :guild-id="guildId"
+      :is-requesting-youtube="isRequestingYoutube"
+      :get-album-cover-url="getAlbumCoverUrl"
+      :is-mobile="isMobile"
+      @select-artist="selectArtist"
+      @select-album="selectAlbum"
+      @request-track="requestTrack"
+      @request-youtube-track="requestYoutubeTrack"
+      @back="router.back()"
+    />
   </div>
 </template>
 
